@@ -81,6 +81,7 @@ def export_scope(conn, cases, result):
             (case['id'],scope['network_id'],scope['practice_location_id'])):
             item=dict(record);item['case_id']=case['id']
             item['binding_snapshot']=json.loads(item['binding_snapshot']);item['raw_labels']=json.loads(item['raw_labels']);item['receipt_metadata']=json.loads(item['receipt_metadata'])
+            if item['organization_id']:organizations.add(item['organization_id'])
             binding_ids.update(item['binding_snapshot']);result['participations'].append(item)
         result['review_evidence'].extend(review_evidence(conn,case['id']))
         binding_ids.update(case['evidence'].get('binding_ids',[]))
