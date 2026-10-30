@@ -167,13 +167,17 @@ class IntakeStore:
             raise ValueError('Supported JSON profiles: flat, nppes, cms')
         if not source.strip():
             raise ValueError('A source namespace/scope is required')
+        source = source.strip()
+        metadata = metadata or {}
         sha = self.retain(payload)
         receipt_id = uid()
         with self.db() as conn:
-            duplicate = conn.execute('select id from receipt where artifact_sha=? and source=? and profile=? order by received_at limit 1', (sha, source, profile)).fetchone()
+            candidates = conn.execute('SELECT id,metadata FROM receipt WHERE artifact_sha=? AND source=? AND profile=? ORDER BY received_at,id',(sha,source,profile))
+            duplicate = next((row for row in candidates if json.loads(row['metadata']).get('scope') == metadata.get('scope')),None)
             conn.execute('insert into receipt values (?,?,?,?,?,?,?,?,?)', (receipt_id, Path(filename).name, source.strip(), designation, now(), sha, profile, duplicate[0] if duplicate else None, packed(metadata or {})))
         with self.db() as conn:
-            prior = conn.execute("select a.spec from attempt a join receipt r on r.id=a.receipt_id where r.artifact_sha=? and r.source=? and r.profile=? and a.state='committed' order by a.created_at desc limit 1", (sha,source,profile)).fetchone()
+            candidates = conn.execute("SELECT a.spec,r.metadata FROM attempt a JOIN receipt r ON r.id=a.receipt_id WHERE r.artifact_sha=? AND r.source=? AND r.profile=? AND a.state='committed' ORDER BY a.committed_at DESC,a.id DESC",(sha,source,profile))
+            prior = next((row for row in candidates if json.loads(row['metadata']).get('scope') == metadata.get('scope')),None)
         settings = {k:v for k,v in json.loads(prior[0]).items() if k not in {'adapter_version','profile','baseline_attempt_id'}} if prior else {}
         if settings.get('mapping_revision_id'):
             settings = {'mapping_revision_id': settings['mapping_revision_id']}
@@ -437,7 +441,9 @@ class IntakeStore:
             receipt['observations'] = [self.observation(dict(r)) for r in conn.execute('select * from observation where attempt_id=?', (attempt_id,))]
             for observation in receipt['observations']:
                 observation['relationships'] = [dict(r) for r in conn.execute('select * from relationship where observation_id=? order by id', (observation['id'],))]
-            receipt['linked_cases'] = [dict(r) for r in conn.execute('select distinct c.* from work_case c join work_evidence w on w.case_id=c.id join observation o on o.id=w.observation_id where o.attempt_id=?', (attempt_id,))]
+            receipt['linked_cases'] = [dict(r) for r in conn.execute('''SELECT DISTINCT c.* FROM work_case c WHERE c.id IN
+                (SELECT w.case_id FROM work_evidence w JOIN observation o ON o.id=w.observation_id WHERE o.attempt_id=?
+                 UNION SELECT e.case_id FROM participation_review_evidence e WHERE e.attempt_id=?)''', (attempt_id,attempt_id))]
             return receipt
 
     @staticmethod
@@ -491,7 +497,8 @@ class IntakeStore:
                 state = 'duplicate_delivery'
                 preview['reuses_attempt'] = previous[0]
             elif state == 'committed':
-                if not preview['valid_count']:
+                explicit_empty = spec.get('roster_kind') == 'network' and preview['total'] == 0 and preview['comparison'].get('baseline') is not None and json.loads(receipt['metadata']).get('completeness') == 'full'
+                if not preview['valid_count'] and not explicit_empty:
                     raise ValueError('No valid rows to accept; correct mapping or reject')
                 for row in preview['rows']:
                     if row['problems']:
@@ -513,6 +520,9 @@ class IntakeStore:
                         link_participation(self, conn, receipt, observation, spec)
                     else:
                         self.link_work(conn, receipt, observation)
+            if state == 'committed':
+                from .network_review import record_comparison_work
+                record_comparison_work(self,conn,receipt,attempt,preview,spec)
             conn.execute('update attempt set state=?,preview=?,committed_at=?,decision=? where id=?', (state, packed(preview), now(), packed({'policy':policy,'actor':actor,'reason':reason}), attempt['id']))
         return self.detail(receipt_id)
 
@@ -549,12 +559,21 @@ class IntakeStore:
                 conn.execute('insert into work_case values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (case_id, kind, key, str(norm.get('provider_name','')), location, field, issue, risk, risk_reason, 'new', None, None, 0, packed(evidence), None, None, now(), now()))
             conn.execute('insert or ignore into work_evidence values (?,?)', (case_id, observation['id']))
 
-    def work(self):
+    def work(self, network_id=None, organization_id=None, location_id=None):
+        where,parameters=[],[]
+        for column,value in [('s.network_id',network_id),('s.organization_id',organization_id),('s.practice_location_id',location_id)]:
+            if value is not None:where.append(column+'=?');parameters.append(value)
+        condition=(' WHERE '+' AND '.join(where)) if where else ''
         with self.db() as conn:
-            rows = [dict(r) for r in conn.execute("select * from work_case order by case risk_level when 'high' then 0 when 'medium' then 1 else 2 end, case when follow_up < date('now') then 0 else 1 end, created_at, id")]
-        for row in rows:
-            row['source'] = json.loads(row.pop('evidence'))['source']
-        return {'items': rows}
+            rows=[dict(row) for row in conn.execute("""SELECT c.*,s.network_id,n.label network_label,
+                s.organization_id,o.label organization_label,s.practice_location_id,l.label location_label
+                FROM work_case c LEFT JOIN case_scope s ON s.case_id=c.id
+                LEFT JOIN network n ON n.id=s.network_id LEFT JOIN organization o ON o.id=s.organization_id
+                LEFT JOIN practice_location l ON l.id=s.practice_location_id"""+condition+"""
+                ORDER BY CASE c.risk_level WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
+                CASE WHEN c.follow_up < date('now') THEN 0 ELSE 1 END,c.created_at,c.id""",parameters)]
+        for row in rows:row['source']=json.loads(row.pop('evidence'))['source']
+        return {'items':rows}
 
     def case(self, case_id):
         with self.db() as conn:
@@ -563,6 +582,9 @@ class IntakeStore:
                 raise KeyError('Work case not found')
             case = dict(row)
             case['evidence'] = json.loads(case['evidence'])
+            from .network_review import case_scope, review_evidence
+            case['scope'] = case_scope(conn,case_id)
+            case['participation_review'] = review_evidence(conn,case_id)
             case['history'] = [{**dict(r), 'payload': json.loads(r['payload'])} for r in conn.execute('select * from work_event where case_id=? order by id', (case_id,))]
             case['later_evidence'] = [self.observation(dict(r)) for r in conn.execute('select o.* from observation o join work_evidence w on w.observation_id=o.id where w.case_id=? and o.id != ? order by o.retrieved_at', (case_id, case['evidence']['observation_id']))]
             return case

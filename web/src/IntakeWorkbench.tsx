@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./intake.css";
 import { RecurringImport, type DeliveryComparison } from "./RecurringImport";
 import { NetworkSetup, RosterConfiguration, emptyRosterBindings, type RosterBindings } from "./NetworkSetup";
+import { NetworkWorkFilters, NetworkCaseScope, type CaseScope, type ReviewEntry } from "./NetworkWork";
 
 type JsonObject = Record<string, unknown>;
 type PreviewRow = {
@@ -87,6 +88,14 @@ type WorkCase = {
   kind: "qa" | "correction";
   provider_name?: string;
   location_id?: string;
+  network_id?: string | null;
+  network_label?: string | null;
+  organization_id?: string | null;
+  organization_label?: string | null;
+  practice_location_id?: string | null;
+  location_label?: string | null;
+  scope?: CaseScope|null;
+  participation_review?: ReviewEntry[];
   status: string;
   issue?: string;
   risk_level?: string;
@@ -641,6 +650,11 @@ function ReceiptDetail({
       </>
     );
   const preview = detail.preview;
+  const acceptsEmptyFullNetwork = detail.state === "preview_ready"
+    && detail.attempts?.at(-1)?.spec?.roster_kind === "network"
+    && detail.metadata?.completeness === "full"
+    && preview?.total === 0
+    && Boolean(preview?.comparison?.baseline);
   const suggestedMapping = detail.metadata?.suggested_mapping;
   const hasSuggestedMapping = suggestedMapping !== null && typeof suggestedMapping === "object";
   const isReferenceSample = ["nppes", "cms"].includes(String(detail.metadata?.demo_sample));
@@ -896,10 +910,10 @@ function ReceiptDetail({
                 !actor ||
                 !reason ||
                 detail.state !== "preview_ready" ||
-                !preview.valid_count
+                (!preview.valid_count && !acceptsEmptyFullNetwork)
               }
             >
-              Accept valid rows
+              {acceptsEmptyFullNetwork ? "Accept empty snapshot as absence evidence" : "Accept valid rows"}
             </button>
             <button
               type="button"
@@ -1092,6 +1106,9 @@ function WorkQueue() {
     awaiting: params.get("awaiting") === "1",
     unassigned: params.get("unassigned") === "1",
     needs_information: params.get("needs_information") === "1",
+    network_id: params.get("network_id") ?? "",
+    organization_id: params.get("organization_id") ?? "",
+    location_id: params.get("location_id") ?? "",
   });
   const update = (next: typeof filters) => {
     setFilters(next);
@@ -1113,6 +1130,9 @@ function WorkQueue() {
           .toLowerCase()
           .includes(filters.owner.toLowerCase())) &&
       (!filters.status || item.status === filters.status) &&
+      (!filters.network_id || item.network_id === filters.network_id) &&
+      (!filters.organization_id || item.organization_id === filters.organization_id) &&
+      (!filters.location_id || item.practice_location_id === filters.location_id) &&
       (!filters.overdue ||
         (item.follow_up &&
           new Date(item.follow_up) < new Date() &&
@@ -1124,6 +1144,10 @@ function WorkQueue() {
       (!filters.unassigned || !item.owner) &&
       (!filters.needs_information || item.status === "needs_information"),
   );
+  useEffect(() => {
+    if (resource.data && selected && (filters.network_id || filters.organization_id || filters.location_id)
+      && !items.some((item) => item.id === selected)) setSelected("");
+  }, [resource.data, filters, selected]);
   return (
     <>
       <section className="iw-card">
@@ -1218,6 +1242,15 @@ function WorkQueue() {
             Needs information
           </label>
         </div>
+        <NetworkWorkFilters
+          items={resource.data?.items ?? []}
+          networkId={filters.network_id}
+          organizationId={filters.organization_id}
+          locationId={filters.location_id}
+          onNetwork={(network_id) => update({...filters,network_id})}
+          onOrganization={(organization_id) => update({...filters,organization_id})}
+          onLocation={(location_id) => update({...filters,location_id})}
+        />
         <ErrorMessage error={resource.error} retry={resource.refresh} />
       </section>
       <section className="iw-split">
@@ -1241,6 +1274,10 @@ function WorkQueue() {
                     {item.kind} · {item.location_id || "Unresolved location"} ·{" "}
                     {item.owner || "Unassigned"}
                   </small>
+                  {item.network_id && <small>
+                    Network {item.network_label || item.network_id} · {item.location_label || item.practice_location_id || "Unresolved practice location"}
+                    {item.organization_id ? ` · ${item.organization_label || item.organization_id}` : " · organization unknown"}
+                  </small>}
                   <small>
                     {pretty(item.risk_level)} priority: {item.risk_reason}
                   </small>
@@ -1315,7 +1352,12 @@ function WorkDetail({
         <a href={`/api/work-export.xlsx?${new URLSearchParams({ case_id: id })}`} download>
           Download case XLSX
         </a>
+        <a href={`/api/work-export.json?${new URLSearchParams({ case_id: id })}`} download>
+          Download case JSON
+        </a>
       </div>
+      <NetworkCaseScope scope={detail.scope} review={detail.participation_review} evidence={detail.evidence} />
+      {detail.scope && <p className="iw-muted">This case export includes only its operational scope. Shared receipt and attempt payloads may contain other source rows and are labeled context.</p>}
       <p className="iw-notice">
         <strong>{pretty(detail.issue)}</strong>
         <br />

@@ -118,9 +118,12 @@ test('reviewed CEDAR/PINE and NORTH/SOUTH bindings produce three distinct source
   const download = await downloadPromise;
   const packet = JSON.parse(await readFile((await download.path())!,'utf8'));
   expect(packet.observations).toHaveLength(3);
-  expect(packet.linked_cases).toHaveLength(3);
-  expect(packet.cases).toHaveLength(3);
-  expect(packet.cases.every((item:{kind:string;status:string;field_name:string}) => item.kind === 'qa' && item.status === 'new' && item.field_name === 'participation')).toBeTruthy();
+  const participationCases = packet.cases.filter((item:{field_name:string}) => item.field_name === 'participation');
+  const validationCases = packet.cases.filter((item:{field_name:string}) => item.field_name === 'participation_validation');
+  expect(participationCases).toHaveLength(3);
+  expect(validationCases).toHaveLength(1);
+  expect(packet.linked_cases).toHaveLength(4);
+  expect(packet.cases.every((item:{kind:string;status:string}) => item.kind === 'qa' && item.status === 'new')).toBeTruthy();
   const assertions = packet.observations.map((item:{normalized:{participation:{network_id:string;location_id:string;listed_status:string}}}) => item.normalized.participation);
   expect(new Set(assertions.map((item:{network_id:string;location_id:string}) => `${item.network_id}/${item.location_id}`)).size).toBe(3);
   expect(assertions.every((item:{listed_status:string}) => item.listed_status === 'listed')).toBeTruthy();

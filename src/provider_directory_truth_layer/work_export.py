@@ -15,18 +15,27 @@ from openpyxl.utils import get_column_letter
 from .intake_store import now
 
 
-def snapshot(path: Path, case_id: str | None = None) -> dict:
+def snapshot(path: Path, case_id: str | None = None, network_id: str | None = None) -> dict:
     """Pin one WAL read snapshot, materialize it, then release before XLSX rendering."""
+    if case_id is not None and network_id is not None:
+        raise ValueError('Choose selected case OR network scope, not both')
     with closing(sqlite3.connect(path.resolve().as_uri() + '?mode=ro', uri=True)) as conn:
         conn.row_factory = sqlite3.Row
         conn.execute('pragma query_only=ON')
         conn.execute('begin')
-        where, args = ('where id=?', (case_id,)) if case_id is not None else ('', ())
-        cases = [dict(r) for r in conn.execute(f'select * from work_case {where} order by id', args)]
+        if network_id is not None:
+            if conn.execute("SELECT 1 FROM sqlite_master WHERE name='network'").fetchone() is None or conn.execute('SELECT 1 FROM network WHERE id=?',(network_id,)).fetchone() is None:
+                raise KeyError('Network not found')
+            cases=[dict(row) for row in conn.execute('SELECT c.* FROM work_case c JOIN case_scope s ON s.case_id=c.id WHERE s.network_id=? ORDER BY c.id',(network_id,))]
+        else:
+            where,args=('WHERE id=?',(case_id,)) if case_id is not None else ('',())
+            cases=[dict(row) for row in conn.execute(f'SELECT * FROM work_case {where} ORDER BY id',args)]
         if case_id is not None and not cases:
             raise KeyError('Work case not found')
         # The first SELECT establishes the database snapshot; timestamp is descriptive.
-        result = {'snapshot_at': now(), 'case_id': case_id, 'cases': cases,
+        result = {'format_version':2, 'scope':{'kind':'case' if case_id is not None else 'network' if network_id is not None else 'all_durable_work',
+                  'id':case_id if case_id is not None else network_id,
+                  'shared_context':'Receipts and complete attempt payloads can contain other rows or interpretations; scoped cases/relationships/participations/catalog/bindings are projected separately.'}, 'snapshot_at': now(), 'case_id': case_id, 'network_id': network_id, 'cases': cases,
                   'evidence': [], 'decisions': [], 'relationships': []}
         receipt_ids = set()
         for case in cases:
@@ -50,12 +59,19 @@ def snapshot(path: Path, case_id: str | None = None) -> dict:
                     '''select * from relationship where observation_id=?
                        and provider_id=? and location_id=? order by id''',
                     (observation['id'], case['evidence'].get('provider_id'), case['location_id'])))
+        from .network_review import export_scope
+        export_scope(conn,cases,result)
+        for item in result['review_evidence']:
+            receipt_ids.add(item['receipt_id'])
+            previous_receipt=item['payload'].get('comparison',{}).get('previous_receipt_id')
+            if previous_receipt:receipt_ids.add(previous_receipt)
         # Include repeat deliveries of the same source/profile/artifact, even when
         # acceptance reused an earlier interpretation instead of creating observations.
         related = set(receipt_ids)
         for rid in receipt_ids:
             related.update(r[0] for r in conn.execute('''select r.id from receipt r join receipt origin
                 on r.source=origin.source and r.profile=origin.profile and r.artifact_sha=origin.artifact_sha
+                and json_extract(r.metadata,'$.scope') IS json_extract(origin.metadata,'$.scope')
                 where origin.id=?''', (rid,)))
         result['receipts'], result['attempts'] = [], []
         for rid in sorted(related):
@@ -66,8 +82,8 @@ def snapshot(path: Path, case_id: str | None = None) -> dict:
         return result
 
 
-def handoff_workbook(path: Path, case_id: str | None = None) -> bytes:
-    data = snapshot(path, case_id)
+def handoff_workbook(path: Path, case_id: str | None = None, network_id: str | None = None) -> bytes:
+    data = snapshot(path, case_id, network_id)
     workbook = Workbook()
     workbook.remove(workbook.active)
     payloads = []
@@ -115,10 +131,10 @@ def handoff_workbook(path: Path, case_id: str | None = None) -> bytes:
         return tab
 
     sheet('Read me', ['item', 'meaning'], [
-        ['format_version', '1'], ['snapshot_at_utc', data['snapshot_at']],
-        ['scope', 'Selected case: ' + case_id if case_id is not None else 'All durable work cases; UI filters do not apply'],
+        ['format_version', '2'], ['snapshot_at_utc', data['snapshot_at']],
+        ['scope', 'Selected case: ' + case_id if case_id is not None else 'Selected network: ' + network_id if network_id is not None else 'All durable work cases; UI filters do not apply'],
         ['case_count', str(len(data['cases']))],
-        ['consistency', 'One read-only SQLite transaction; snapshot pinned by first case SELECT. Rendering begins after reads finish. No workflow writes.'],
+        ['consistency', 'One read-only SQLite transaction; snapshot pinned by first read. Rendering begins after reads finish. No workflow writes.'],
         ['coverage', 'All linked initial/later observations, events and relationships; no 50-observation/200-case UI cap. Legacy QA/remediation excluded.'],
         ['shared_receipts', 'Related deliveries match source/profile/artifact, including repeats. Attempts contain complete receipt previews, possibly including rows for other cases.'],
         ['values', 'listed_value/requested_value are initial source assertions; approved_value is the active human proposal; observed_value is the most recently asserted observation, including failed verification.'],
@@ -136,10 +152,10 @@ def handoff_workbook(path: Path, case_id: str | None = None) -> bytes:
             case['location_id'], norm.get('record_id'), norm.get('listing_id'), evidence.get('source'), evidence.get('designation'),
             case['field_name'], case['issue'], case['risk_level'], case['risk_reason'], case['status'], case['owner'], case['follow_up'],
             case['version'], evidence.get('listing_value'), evidence.get('reference_value'), case['proposal'], case['observed'],
-            case['created_at'], case['updated_at'], evidence.get('receipt_id'), evidence.get('observation_id'), evidence.get('locator'), payload(case)])
+            case['created_at'], case['updated_at'], evidence.get('receipt_id'), evidence.get('observation_id'), evidence.get('locator'), payload(case), (case.get('scope') or {}).get('network_id'), (case.get('scope') or {}).get('network_label'), (case.get('scope') or {}).get('organization_id'), (case.get('scope') or {}).get('organization_label'), (case.get('scope') or {}).get('location_label')])
     sheet('Cases', ['case_id','kind','provider_id','npi','provider_name','location_id','native_record_id','listing_id','source','designation',
         'field_name','issue','risk_level','risk_reason','status','owner','follow_up','version','listed_value','requested_value',
-        'approved_value','observed_value','created_at','updated_at','initial_receipt_id','initial_observation_id','initial_locator','case_payload_id'], cases)
+        'approved_value','observed_value','created_at','updated_at','initial_receipt_id','initial_observation_id','initial_locator','case_payload_id','network_id','network_label','organization_id','organization_label','location_label'], cases)
     receipts = {r['id']: r for r in data['receipts']}
     case_evidence = {case['id']: case['evidence'] for case in data['cases']}
     # Relationship history is ordered by ID; a repeated assertion about this
@@ -189,6 +205,18 @@ def handoff_workbook(path: Path, case_id: str | None = None) -> bytes:
         'proposal_input','simulated_submission_reference','observed_input','verification_note','event_payload_id'], decisions)
     sheet('Relationships', ['relationship_id','case_id','observation_id','provider_id','location_id','location_index','actor','reason','occurred_at'],
         [[r['id'],r['case_id'],r['observation_id'],r['provider_id'],r['location_id'],r['location_index'],r['actor'],r['reason'],r['occurred_at']] for r in data['relationships']])
+    if data['catalog']['networks'] or data['participations'] or data['review_evidence']:
+        sheet('Participations',['case_id','observation_id','receipt_id','native_key','provider_id','network_id','practice_location_id',
+              'organization_id','mapping_revision_id','source_listed_status','reported_effective_date','reported_end_date','participation_payload_id','source','designation','receipt_as_of','declared_completeness','dataset_scope'],
+              [[p['case_id'],p['observation_id'],p['receipt_id'],p['native_key'],p['provider_id'],p['network_id'],p['practice_location_id'],
+                p['organization_id'],p['mapping_revision_id'],p['listed_status'],p['effective_date'],p['end_date'],payload(p),p['source'],p['designation'],p['receipt_metadata'].get('as_of'),p['receipt_metadata'].get('completeness'),json.dumps(p['receipt_metadata'].get('scope'),ensure_ascii=False)] for p in data['participations']])
+        sheet('Review evidence',['case_id','attempt_id','receipt_id','receipt_label','comparison_status','identity_key','row_locator','review_payload_id'],
+              [[e['case_id'],e['attempt_id'],e['receipt_id'],e['receipt_label'],e['status'],e['identity_key'],e['locator'],payload(e)] for e in data['review_evidence']])
+        sheet('Catalog',['kind','id','label','organization_kind','payer_organization_id','organization_id','catalog_payload_id'],
+              [[kind,p['id'],p['label'],p.get('kind'),p.get('payer_organization_id'),p.get('organization_id'),payload(p)]
+               for kind,items in data['catalog'].items() for p in items])
+        sheet('Bindings',['binding_id','source','kind','source_key','target_id','revision','previous_id','actor','reason','created_at'],
+              [[b['id'],b['source'],b['kind'],b['source_key'],b['target_id'],b['revision'],b['previous_id'],b['actor'],b['reason'],b['created_at']] for b in data['bindings']])
     sheet('Payloads', ['payload_id','part','json_chunk'], payloads)
     output = io.BytesIO()
     workbook.save(output)

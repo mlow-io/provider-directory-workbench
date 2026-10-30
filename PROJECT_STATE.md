@@ -4,6 +4,8 @@ Updated 2026-10-30. Local Intake Workbench 2.0; original G0–G5 baseline and th
 
 ## Implemented behavior
 
+- Scoped network comparison QA, exact work filters and read-only all/case/network JSON/XLSX, preserving source status/dates and human review separately. Known invalid/missing source rows are comparison evidence, never accepted membership.
+
 - Explicit organization/network/practice-location catalog, immutable reviewed source bindings and scoped participation observations, with unknown identity/date conflicts quarantined. Schema v4 preserves previous work.
 
 - Reviewed immutable recurring clinic mapping revisions, required-header drift handling, one displayed accepted baseline, valid-only old/new field comparisons and stale-baseline acceptance checks. Schema v4 preserves prior records and interpretation settings.
@@ -51,6 +53,8 @@ The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-
 
 Read [README](README.md), [AGENTS](AGENTS.md), [execution checkpoint](docs/INTAKE_2_0_PROGRESS.md), [architecture decisions](docs/DECISIONS.md), and [demo procedure](docs/operations_governance/sop_provider_remediation.md). Historical handoff/review findings remain dated evidence; the current dispositions and checks are linked rather than rewriting reproductions.
 
-The [recurring-clinic qualification](docs/evidence/data_operations/n1/README.md) passed 141 Python tests, pipeline validation, eight frontend tests, build and 16 browser scenarios, plus actual restart/repeat/packet evidence. N2 storage is implemented; N3–N4 remain planned.
+The [recurring-clinic qualification](docs/evidence/data_operations/n1/README.md) passed 141 Python tests, pipeline validation, eight frontend tests, build and 16 browser scenarios, plus actual restart/repeat/packet evidence. N2 storage is implemented; N3 scoped review/export is implemented; N4 demonstration remains planned.
 
 [N2 storage qualification](docs/evidence/data_operations/n2/README.md) records the passing explicit-binding/three-participation browser journey and migration preservation. N3–N4 remain the next scoped delivery.
+
+[N3 scoped review qualification](docs/evidence/data_operations/n3/README.md) records passing missing/blocked evidence, exact network filters, read-only handoffs and full-empty snapshot semantics. The final guided multi-file demonstration is the next gate.

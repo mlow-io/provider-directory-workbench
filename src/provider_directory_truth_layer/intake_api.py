@@ -197,15 +197,21 @@ def create_workbench(path: Path | None = None, root: Path | None = None, *, demo
         return store.create_catalog(kind, payload)
 
     @app.get('/api/work')
-    def work():
-        return store.work()
+    def work(network_id: str | None = None, organization_id: str | None = None, location_id: str | None = None):
+        return store.work(network_id,organization_id,location_id)
 
     @app.get('/api/work-export.xlsx')
-    def work_export(case_id: str | None = None):
+    def work_export(case_id: str | None = None, network_id: str | None = None):
         from .work_export import handoff_workbook
-        return Response(handoff_workbook(store.path, case_id),
+        return Response(handoff_workbook(store.path, case_id, network_id),
             media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             headers={'Content-Disposition': 'attachment; filename=durable-work-handoff.xlsx'})
+
+    @app.get('/api/work-export.json')
+    def work_export_json(case_id: str | None = None, network_id: str | None = None):
+        from .work_export import snapshot
+        return JSONResponse(snapshot(store.path,case_id,network_id),
+            headers={'Content-Disposition':'attachment; filename=durable-work-handoff.json'})
 
     @app.get('/api/work/{case_id}')
     def case(case_id: str):

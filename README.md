@@ -60,7 +60,7 @@ PDTL_ROOT=.runtime/my-work PYTHONPATH=src python3 -m provider_directory_truth_la
 
 Service startup never runs the pipeline or deletes data. `make demo` explicitly refreshes only the legacy synthetic projection in its demo root. `make validate` creates an invocation-owned fixture root. `make clean` deletes nothing. Playwright creates its own temporary database and uses known ports 8100/5180 without server reuse.
 
-Schema migrations 1–3 are additive, transactional, and reject unknown future versions. Legacy upgrade backups are created with SQLite's backup API. Existing source/runtime originals are not automatically migrated. New intake event rows have database update/delete guards and expected-version checks. Per-connection foreign keys, WAL, and a 10-second busy timeout are configured. Direct database editing is outside the application trust boundary.
+Schema migrations 1–4 are additive, transactional, and reject unknown future versions. Legacy upgrade backups are created with SQLite's backup API. Existing source/runtime originals are not automatically migrated. New intake event rows have database update/delete guards and expected-version checks. Per-connection foreign keys, WAL, and a 10-second busy timeout are configured. Direct database editing is outside the application trust boundary.
 
 On restart, unfinished processing attempts become `interrupted`; reprocess the retained receipt. `artifact-recovery.json` reports staged, unregistered, or missing artifacts without deleting or accepting them. Accepted observations and linked work commit together. Export files are projections, not the database of record.
 
@@ -106,6 +106,10 @@ PYTHONPATH=src python3 -m provider_directory_truth_layer.operations_sql --db .ru
 ## Recurring clinic files
 
 After reviewing a ready file, expand recurring import review and save a named mapping revision. Upload changed bytes in the same source scope, select the saved revision, and apply it. Inspect the single accepted baseline, old/new fields, blocked-invalid rows and missing records before accepting. Missing required headers pause acceptance; unknown columns remain in the original. If another delivery is accepted first, refresh comparison and review again. See [API](docs/API_REFERENCE.md#recurring-file-intake-schema-v3) and [workflow](docs/OPERATIONS_WORKFLOW.md#recurring-clinic-deliveries).
+
+## Network source assertions
+
+Create explicit payer/network/clinic/location records and reviewed exact-code bindings from the intake setup. Configure a file as network participation, review dates/unknown bindings, and accept valid rows explicitly. Recurring network deliveries share one accepted baseline within a declared dataset/network scope. Missing and known invalid rows become review evidence; no automatic termination or verification occurs. Filter work by network/organization/location and download explicitly scoped XLSX/JSON, while all-work export continues to ignore UI filters. See [workflow](docs/OPERATIONS_WORKFLOW.md#recurring-network-review-and-scoped-handoff) and [export contract](docs/API_REFERENCE.md#scoped-network-review-and-handoff).
 
 ## Planned next phase
 

@@ -32,7 +32,7 @@ def _query(conn: sqlite3.Connection, name: str, parameters: dict | None = None) 
 
 def _selected_attempt(conn: sqlite3.Connection, attempt_id: str) -> tuple[str, dict]:
     row = conn.execute(
-        """SELECT a.id, a.state, a.preview, a.receipt_id, r.source, r.profile, r.metadata
+        """SELECT a.id, a.state, a.preview, a.spec, a.receipt_id, r.source, r.profile, r.metadata
            FROM attempt AS a JOIN receipt AS r ON r.id = a.receipt_id WHERE a.id = ?""",
         (attempt_id,),
     ).fetchone()
@@ -42,28 +42,34 @@ def _selected_attempt(conn: sqlite3.Connection, attempt_id: str) -> tuple[str, d
     if row["state"] == "duplicate_delivery":
         canonical = json.loads(row["preview"]).get("reuses_attempt")
         reused = conn.execute(
-            """SELECT a.state, r.source, r.profile, r.metadata FROM attempt AS a
+            """SELECT a.state, a.spec, r.source, r.profile, r.metadata FROM attempt AS a
                JOIN receipt AS r ON r.id = a.receipt_id WHERE a.id = ?""",
             (canonical,),
         ).fetchone()
         if reused is None or reused["state"] != "committed":
             raise ValueError(f"Attempt {attempt_id!r} has no committed reuse target")
-        if (reused["source"], reused["profile"], json.loads(reused["metadata"]).get("scope")) != (
-            row["source"], row["profile"], json.loads(row["metadata"]).get("scope")
-        ):
+        if _scope(reused) != _scope(row):
             raise ValueError("Duplicate delivery reuse target has incompatible scope")
-    return canonical, {"source": row["source"], "profile": row["profile"],
-                       "scope": json.loads(row["metadata"]).get("scope")}
+    return canonical, _scope(row)
+
+
+def _scope(row):
+    spec=json.loads(row['spec'])
+    return {'source':row['source'],'profile':row['profile'],'scope':json.loads(row['metadata']).get('scope'),
+            'roster_kind':spec.get('roster_kind','clinic'),
+            'networks':sorted({item['target_id'] for item in spec.get('binding_snapshot',{}).values() if item['kind']=='network'})}
 
 
 def _check_unique_keys(conn: sqlite3.Connection, attempt_id: str) -> None:
-    rows = conn.execute(
-        """SELECT native_id, coalesce(cast(json_extract(normalized, '$.location_id') AS text), '') AS location_key,
-                  count(*) AS copies FROM observation WHERE attempt_id = ?
-           GROUP BY native_id, location_key""",
-        (attempt_id,),
-    ).fetchall()
-    if any(row["native_id"] is None or str(row["native_id"]).strip() == "" or row["copies"] != 1 for row in rows):
+    rows=conn.execute("""SELECT native_id,
+      coalesce(cast(json_extract(normalized,'$.participation.network_id') AS TEXT),'') network_key,
+      coalesce(cast(json_extract(normalized,'$.participation.provider_id') AS TEXT),'') provider_key,
+      coalesce(cast(json_extract(normalized,'$.participation.location_id') AS TEXT),
+               cast(json_extract(normalized,'$.location_id') AS TEXT),'') location_key,
+      max(json_type(normalized,'$.participation') IS NOT NULL) is_network,count(*) copies
+      FROM observation WHERE attempt_id=? GROUP BY native_id,network_key,provider_key,location_key""",(attempt_id,)).fetchall()
+    if any(row['native_id'] is None or not str(row['native_id']).strip() or row['copies']!=1 or
+           row['is_network'] and not all(row[key] for key in ['network_key','provider_key','location_key']) for row in rows):
         raise ValueError(f"Attempt {attempt_id!r} has unresolved or duplicate source-native keys")
 
 
@@ -80,7 +86,11 @@ def run(path: Path, question: str, **parameters: object) -> list[dict]:
                 raise ValueError("--as-of must be an ISO date (YYYY-MM-DD)") from error
             return _query(conn, "follow_up", {"as_of": as_of, "include_closed": int(bool(parameters.get("include_closed")))})
         if question == "lineage":
-            return _query(conn, "lineage", {"case_id": parameters["case_id"]})
+            rows=_query(conn,"lineage",{'case_id':parameters['case_id']})
+            if conn.execute("SELECT 1 FROM sqlite_master WHERE name='participation_review_evidence'").fetchone():
+                review=_query(conn,'lineage_review',{'case_id':parameters['case_id']})
+                if review:rows=[row for row in rows if row['observation_id'] is not None]+review
+            return rows
         if question == "latest-event":
             return _query(conn, "latest_event")
         if question == "compare":

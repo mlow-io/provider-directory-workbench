@@ -1,0 +1,14 @@
+Publication copy: local paths normalized; exact original retained locally.
+
+
+> directory-review-console@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.5 <checkout>/web
+
+
+ Test Files  6 passed (6)
+      Tests  14 passed (14)
+   Start at  08:02:55
+   Duration  2.38s (environment 50%, tests 20%, import 10%, setup 9%, transform 9%, worker 1%)

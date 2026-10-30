@@ -1,0 +1,8 @@
+.nw-filters { margin-top: 1rem; }
+.nw-export, .nw-case { border: 1px solid #c7dbd5; background: #f6fbf8; border-radius: 8px; padding: .85rem; margin-block: 1rem; overflow-wrap: anywhere; }
+.nw-export p { margin-top: 0; }
+.nw-review { padding-left: 1.25rem; }
+.nw-review li { margin-block: 1rem; border-bottom: 1px solid #c7dbd5; }
+.nw-review table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-block: .75rem; }
+.nw-review th, .nw-review td { border-bottom: 1px solid #c7dbd5; text-align: left; padding: .35rem; overflow-wrap: anywhere; }
+@media (max-width: 560px) { .nw-review table { font-size: .8rem; } .nw-review th, .nw-review td { padding: .2rem; } }

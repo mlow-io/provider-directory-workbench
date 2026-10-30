@@ -90,3 +90,30 @@ test('XLSX links distinguish the full queue from the selected case regardless of
   expect(screen.getByText(/ignores the filters below/)).toBeInTheDocument();
   expect(await screen.findByRole('link', {name: 'Download case XLSX'})).toHaveAttribute('href', '/api/work-export.xlsx?case_id=case-1');
 });
+
+test('only a reviewed empty full network snapshot can accept absence evidence', async () => {
+  const commits: Record<string,unknown>[] = [];
+  const receipt = {
+    id:'empty-network',label:'empty-network.csv',source:'synthetic-network',designation:'synthetic',state:'preview_ready',attempt_id:'attempt-empty',
+    metadata:{completeness:'full'},attempts:[{id:'attempt-empty',spec:{roster_kind:'network',mapping:{},bindings:{network:{},location:{},organization:{}}}}],
+    preview:{state:'preview_ready',total:0,valid_count:0,quarantined_count:0,rows:[],mapping:{},comparison:{baseline:{attempt_id:'prior',receipt_id:'prior-receipt',label:'prior.csv',committed_at:'2026-10-30'},missing_from_this_delivery:3,entries:[]}},
+    observations:[],linked_cases:[],
+  };
+  vi.stubGlobal('fetch',vi.fn(async (url:string,init?:RequestInit) => {
+    if (url === '/api/intakes') return new Response(JSON.stringify({items:[{id:receipt.id,label:receipt.label,source:receipt.source,state:receipt.state}]}));
+    if (url === '/api/demo/samples') return new Response(JSON.stringify({items:[]}));
+    if (url.endsWith('/saved-mappings')) return new Response(JSON.stringify({items:[]}));
+    if (url.endsWith('/commit')) {commits.push(JSON.parse(String(init?.body)));return new Response(JSON.stringify({...receipt,state:'committed'}));}
+    if (url === '/api/catalog') return new Response(JSON.stringify({organizations:[],networks:[],locations:[],bindings:[]}));
+    return new Response(JSON.stringify(receipt));
+  }));
+  render(<IntakeWorkbench page="intake" />);
+  fireEvent.click(await screen.findByRole('button',{name:/empty-network.csv/}));
+  const accept = await screen.findByRole('button',{name:'Accept empty snapshot as absence evidence'});
+  expect(accept).toBeDisabled();
+  fireEvent.change(screen.getByLabelText('Reviewer',{exact:true}),{target:{value:'Synthetic Reviewer'}});
+  fireEvent.change(screen.getByLabelText('Acceptance / rejection reason'),{target:{value:'Full scoped empty file reviewed'}});
+  expect(accept).toBeEnabled();
+  fireEvent.click(accept);
+  await waitFor(() => expect(commits).toEqual([{policy:'valid_rows',actor:'Synthetic Reviewer',reason:'Full scoped empty file reviewed',expected_attempt:'attempt-empty'}]));
+});
