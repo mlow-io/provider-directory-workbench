@@ -1,8 +1,8 @@
-.ri-section { margin-block: 1.25rem; padding: 1rem; border: 1px solid var(--line, #d8dfe2); border-radius: .75rem; }
+.ri-section { margin-block: 1.25rem; padding: 1rem; border: 1px solid var(--line, #d8dfe2); border-radius: .75rem; min-width: 0; overflow-wrap: anywhere; }
 .ri-section h4 { margin-top: 0; }
 .ri-controls { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; margin-block: 1rem; }
 .ri-controls label { flex: 1 1 16rem; min-width: 0; }
-.ri-controls select, .ri-filter select { display: block; width: 100%; }
+.ri-controls select, .ri-filter select { display: block; width: 100%; min-width: 0; max-width: 100%; }
 .ri-counts { display: flex; flex-wrap: wrap; gap: .4rem 1rem; padding-left: 1.25rem; }
 .ri-filter { display: block; max-width: 18rem; margin-block: 1rem; }
 .ri-entries { padding-left: 1.25rem; }

@@ -1,4 +1,4 @@
-Publication copy: local paths normalized; exact original retained locally.
+Publication copy: machine-specific paths normalized; exact original retained privately.
 
 
 > directory-review-console@0.1.0 test
@@ -10,5 +10,5 @@ Publication copy: local paths normalized; exact original retained locally.
 
  Test Files  6 passed (6)
       Tests  14 passed (14)
-   Start at  08:24:01
-   Duration  2.53s (environment 49%, tests 22%, import 12%, setup 9%, transform 8%, worker 1%)
+   Start at  09:16:32
+   Duration  1.91s (environment 48%, tests 27%, import 12%, setup 9%, transform 2%, worker 1%)

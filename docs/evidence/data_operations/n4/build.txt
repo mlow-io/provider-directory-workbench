@@ -1,4 +1,4 @@
-Publication copy: local paths normalized; exact original retained locally.
+Publication copy: machine-specific paths normalized; exact original retained privately.
 
 
 > directory-review-console@0.1.0 build
@@ -10,6 +10,6 @@ transforming...
 rendering chunks...
 computing gzip size...
 dist/index.html                   0.46 kB │ gzip:   0.29 kB
-dist/assets/index-BWe-vyY9.css   26.21 kB │ gzip:   6.51 kB
-dist/assets/index-CTnZBCX9.js   375.34 kB │ gzip: 109.40 kB
-✓ built in 1.06s
+dist/assets/index-MKISWDyE.css   26.27 kB │ gzip:   6.52 kB
+dist/assets/index-CM1z1KKr.js   375.34 kB │ gzip: 109.40 kB
+✓ built in 854ms

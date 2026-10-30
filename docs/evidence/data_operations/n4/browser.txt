@@ -4,40 +4,40 @@ Publication copy: machine-specific paths normalized; exact original retained pri
 > directory-review-console@0.1.0 test:e2e
 > playwright test
 
-[WebServer] INFO:     Started server process [53990]
+[WebServer] INFO:     Started server process [56628]
 [WebServer] INFO:     Waiting for application startup.
 [WebServer] INFO:     Application startup complete.
 [WebServer] INFO:     Uvicorn running on http://127.0.0.1:8100 (Press CTRL+C to quit)
-[WebServer] (node:54028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (node:56662) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 [WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
 
 Running 22 tests using 1 worker
 
-(node:54032) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:56665) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ✓   1 [wide] › e2e/employer-readiness.spec.ts:29:1 › guided offline sample requires mapping review and downloads complete read-only work handoff (3.5s)
+  ✓   1 [wide] › e2e/employer-readiness.spec.ts:29:1 › guided offline sample requires mapping review and downloads complete read-only work handoff (3.4s)
   ✓   2 [wide] › e2e/intake.spec.ts:16:1 › imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens location work (4.5s)
   ✓   3 [wide] › e2e/intake.spec.ts:246:1 › saved public responses, failures, retry, keyboard and responsive sources (1.7s)
-  ✓   4 [wide] › e2e/intake.spec.ts:376:1 › shows loading and empty receipt states and preserves a draft on stale case conflict (952ms)
+  ✓   4 [wide] › e2e/intake.spec.ts:376:1 › shows loading and empty receipt states and preserves a draft on stale case conflict (918ms)
   ✓   5 [wide] › e2e/network-demo.spec.ts:45:1 › guided synthetic network path keeps setup, mapping, acceptance and review distinct (5.8s)
   ✓   6 [wide] › e2e/network-review.spec.ts:42:1 › changed network delivery creates review work and scoped handoffs without changing human state (3.2s)
-  ✓   7 [wide] › e2e/network-storage.spec.ts:32:1 › reviewed CEDAR/PINE and NORTH/SOUTH bindings produce three distinct source assertions (3.2s)
-  ✓   8 [wide] › e2e/recurring-import.spec.ts:20:1 › reviewed mapping survives column reorder, stale baseline, and missing required headers (2.2s)
+  ✓   7 [wide] › e2e/network-storage.spec.ts:32:1 › reviewed CEDAR/PINE and NORTH/SOUTH bindings produce three distinct source assertions (3.5s)
+  ✓   8 [wide] › e2e/recurring-import.spec.ts:20:1 › reviewed mapping survives column reorder, stale baseline, and missing required headers (2.3s)
   ✓   9 [wide] › e2e/remediation-workflow.spec.ts:31:1 › records the payer remediation golden path with immutable evidence (1.3s)
   ✓  10 [wide] › e2e/remediation-workflow.spec.ts:45:1 › reopens a remediation case when verification does not match the approved proposal (1.2s)
-  ✓  11 [wide] › e2e/review-console.spec.ts:3:1 › reviews missing-field, stale-verification, and duplicate candidate cases (1.5s)
-(node:54205) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+  ✓  11 [wide] › e2e/review-console.spec.ts:3:1 › reviews missing-field, stale-verification, and duplicate candidate cases (1.4s)
+(node:56824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  12 [mobile] › e2e/employer-readiness.spec.ts:29:1 › guided offline sample requires mapping review and downloads complete read-only work handoff (3.0s)
-  ✓  13 [mobile] › e2e/intake.spec.ts:16:1 › imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens location work (6.9s)
+  ✓  12 [mobile] › e2e/employer-readiness.spec.ts:29:1 › guided offline sample requires mapping review and downloads complete read-only work handoff (2.9s)
+  ✓  13 [mobile] › e2e/intake.spec.ts:16:1 › imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens location work (6.7s)
   ✓  14 [mobile] › e2e/intake.spec.ts:246:1 › saved public responses, failures, retry, keyboard and responsive sources (2.8s)
-  ✓  15 [mobile] › e2e/intake.spec.ts:376:1 › shows loading and empty receipt states and preserves a draft on stale case conflict (2.1s)
-  ✓  16 [mobile] › e2e/network-demo.spec.ts:45:1 › guided synthetic network path keeps setup, mapping, acceptance and review distinct (993ms)
-  ✓  17 [mobile] › e2e/network-review.spec.ts:42:1 › changed network delivery creates review work and scoped handoffs without changing human state (4.0s)
-  ✓  18 [mobile] › e2e/network-storage.spec.ts:32:1 › reviewed CEDAR/PINE and NORTH/SOUTH bindings produce three distinct source assertions (4.8s)
-  ✓  19 [mobile] › e2e/recurring-import.spec.ts:20:1 › reviewed mapping survives column reorder, stale baseline, and missing required headers (2.4s)
-  ✓  20 [mobile] › e2e/remediation-workflow.spec.ts:31:1 › records the payer remediation golden path with immutable evidence (1.5s)
-  ✓  21 [mobile] › e2e/remediation-workflow.spec.ts:45:1 › reopens a remediation case when verification does not match the approved proposal (1.5s)
+  ✓  15 [mobile] › e2e/intake.spec.ts:376:1 › shows loading and empty receipt states and preserves a draft on stale case conflict (2.0s)
+  ✓  16 [mobile] › e2e/network-demo.spec.ts:45:1 › guided synthetic network path keeps setup, mapping, acceptance and review distinct (969ms)
+  ✓  17 [mobile] › e2e/network-review.spec.ts:42:1 › changed network delivery creates review work and scoped handoffs without changing human state (4.1s)
+  ✓  18 [mobile] › e2e/network-storage.spec.ts:32:1 › reviewed CEDAR/PINE and NORTH/SOUTH bindings produce three distinct source assertions (5.9s)
+  ✓  19 [mobile] › e2e/recurring-import.spec.ts:20:1 › reviewed mapping survives column reorder, stale baseline, and missing required headers (2.8s)
+  ✓  20 [mobile] › e2e/remediation-workflow.spec.ts:31:1 › records the payer remediation golden path with immutable evidence (1.6s)
+  ✓  21 [mobile] › e2e/remediation-workflow.spec.ts:45:1 › reopens a remediation case when verification does not match the approved proposal (1.6s)
   ✓  22 [mobile] › e2e/review-console.spec.ts:3:1 › reviews missing-field, stale-verification, and duplicate candidate cases (2.3s)
 
   22 passed (1.1m)
