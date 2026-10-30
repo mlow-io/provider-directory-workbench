@@ -8,7 +8,7 @@ import sqlite3
 
 import pytest
 
-from provider_directory_truth_layer.intake_store import Conflict, IntakeStore, SCHEMA
+from provider_directory_truth_layer.intake_store import Conflict, IntakeStore, SCHEMA, VERSION
 
 
 SOURCE = "clinic:recurring-fixture"
@@ -315,7 +315,7 @@ def test_migrate_populated_v2_preserves_records_and_backup(tmp_path):
         assert conn.execute("PRAGMA user_version").fetchone()[0] == 2
         assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
     with migrated.db() as conn:
-        assert conn.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == VERSION
         assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
         assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
         assert tuple(conn.execute("SELECT * FROM work_case WHERE id='c1'").fetchone()) == before["case"]

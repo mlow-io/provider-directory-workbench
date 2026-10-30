@@ -26,7 +26,7 @@ MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 20_000
 FIELDS = ['record_id', 'npi', 'provider_name', 'address', 'city', 'state', 'zip', 'phone', 'location_id', 'listing_id', 'reference_phone', 'specialty', 'status', 'source_updated_at']
 REQUIRED = ['npi', 'provider_name', 'address', 'city', 'state', 'zip', 'phone']
-VERSION = 3
+VERSION = 4
 
 
 def now() -> str:
@@ -133,6 +133,14 @@ class IntakeStore:
                         with sqlite3.connect(backup) as target:
                             conn.backup(target)
                 conn.executescript("BEGIN IMMEDIATE;\n" + MIGRATION_3 + "\nINSERT INTO schema_migration VALUES (3, datetime('now')); PRAGMA user_version=3; COMMIT;")
+            if version < 4:
+                from .network_store import MIGRATION_4
+                if version >= 1:
+                    backup = self.path.with_name(self.path.name + '.pre-intake-v4.bak')
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as target:
+                            conn.backup(target)
+                conn.executescript("BEGIN IMMEDIATE;\n" + MIGRATION_4 + "\nINSERT INTO schema_migration VALUES (4, datetime('now')); PRAGMA user_version=4; COMMIT;")
             # A killed process can leave a processing marker, but no partial committed batch.
             conn.execute("update attempt set state='interrupted' where state='processing'")
 
@@ -236,6 +244,19 @@ class IntakeStore:
                 raise ValueError('Row limit is 20,000; split the artifact')
         return rows, headers, [], False
 
+    def catalog(self):
+        from .network_store import catalog
+        with self.db() as conn:
+            return catalog(conn)
+
+    def create_catalog(self, kind, payload):
+        from .network_store import create_catalog
+        return create_catalog(self, kind, payload)
+
+    def bind_source(self, payload):
+        from .network_store import bind_source
+        return bind_source(self, payload)
+
     def saved_mappings(self, receipt_id):
         from .recurring import scope
         with self.db() as conn:
@@ -273,7 +294,9 @@ class IntakeStore:
 
     def mapping(self, receipt_id: str, settings: dict):
         from .recurring import scope, latest_baseline
+        from .network_store import binding_snapshot
         settings = dict(settings)
+        settings.pop('binding_snapshot', None)
         settings.pop('baseline_attempt_id', None)  # Baselines are always pinned by the service.
         required_headers = []
         with self.db() as conn:
@@ -291,8 +314,10 @@ class IntakeStore:
                 required_headers = json.loads(revision['required_headers'])
                 settings = {**json.loads(revision['settings']), 'mapping_revision_id': revision_id}
             recurring = receipt['profile'] == 'flat' and receipt['label'].lower().endswith(('.csv', '.xlsx'))
-            baseline = latest_baseline(conn, receipt) if recurring else None
-        spec = {**settings, 'adapter_version': '1', 'profile': receipt['profile']}
+            snapshot = binding_snapshot(conn, receipt, settings)
+            resolved_settings = {**settings, 'binding_snapshot': snapshot} if settings.get('roster_kind') == 'network' else settings
+            baseline = latest_baseline(conn, receipt, resolved_settings) if recurring else None
+        spec = {**resolved_settings, 'adapter_version': '1', 'profile': receipt['profile']}
         if recurring:
             spec['baseline_attempt_id'] = baseline['id'] if baseline else None
         attempt_id = uid()
@@ -303,7 +328,8 @@ class IntakeStore:
             rows, headers, sheets, native = self.rows(receipt, spec)
             if len(set(headers)) != len(headers) or any(not h for h in headers):
                 raise ValueError('Headers must be nonblank and unique; choose another header row')
-            mapping = {k:v for k,v in settings.get('mapping', {}).items() if v} or {key: key for key in FIELDS if key in headers}
+            from .network_store import NETWORK_FIELDS
+            mapping = {k:v for k,v in settings.get('mapping', {}).items() if v} or {key: key for key in [*FIELDS, *NETWORK_FIELDS] if key in headers}
             missing = [] if native else [key for key in REQUIRED if key not in mapping]
             unknown = [value for value in mapping.values() if value not in headers] if not native else []
             missing_headers = sorted(set(required_headers) - set(headers))
@@ -332,6 +358,8 @@ class IntakeStore:
                 normalized['phone'] = normalize_phone(phone)
                 normalized['zip'] = str(normalized.get('zip', ''))
                 normalized['state'] = str(normalized.get('state', '')).upper()
+            from .network_store import interpret_rows
+            interpret_rows(rows, spec)
             if recurring:
                 from .recurring import mark_duplicate_keys, compare
                 mark_duplicate_keys(rows)
@@ -451,10 +479,13 @@ class IntakeStore:
             spec = json.loads(attempt['spec'])
             if policy == 'valid_rows' and 'baseline_attempt_id' in spec:
                 from .recurring import latest_baseline
-                baseline = latest_baseline(conn, receipt)
+                baseline = latest_baseline(conn, receipt, spec)
                 if spec['baseline_attempt_id'] != (baseline['id'] if baseline else None):
                     raise Conflict('Accepted baseline changed since preview; refresh comparison and review before acceptance')
             previous = conn.execute("select id from attempt where fingerprint=? and state='committed' limit 1", (attempt['fingerprint'],)).fetchone()
+            if policy == 'valid_rows' and spec.get('roster_kind') == 'network':
+                from .network_store import check_bindings
+                check_bindings(conn, spec['binding_snapshot'])
             state = 'rejected' if policy == 'reject' else 'committed'
             if previous and state == 'committed':
                 state = 'duplicate_delivery'
@@ -470,9 +501,18 @@ class IntakeStore:
                     provider = 'NPI:' + str(norm['npi']) if re.fullmatch(r'\d{10}', str(norm.get('npi',''))) else None
                     # A supplied source location ID scopes evidence within its namespace, not across organizations.
                     location = receipt['source'] + ':' + str(norm['location_id']) if norm.get('location_id') else None
+                    if spec.get('roster_kind') == 'network':
+                        provider = norm['participation']['provider_id']
+                        location = norm['participation']['location_id']
                     conn.execute('insert into observation values (?,?,?,?,?,?,?,?,?,?,?)', (observation_id, attempt['id'], row.get('native_id'), row['locator'], packed(row['original']), packed(norm), provider, location, row.get('source_updated_at') or norm.get('source_updated_at'), receipt['received_at'], None))
                     observation = {'id': observation_id, 'native_id': row.get('native_id'), 'locator': row['locator'], 'original': row['original'], 'normalized': norm, 'provider_id': provider, 'location_id': location}
-                    self.link_work(conn, receipt, observation)
+                    if spec.get('roster_kind') == 'network':
+                        from .network_store import link_participation
+                        observation['attempt_id'] = attempt['id']
+                        observation['comparison'] = row.get('comparison')
+                        link_participation(self, conn, receipt, observation, spec)
+                    else:
+                        self.link_work(conn, receipt, observation)
             conn.execute('update attempt set state=?,preview=?,committed_at=?,decision=? where id=?', (state, packed(preview), now(), packed({'policy':policy,'actor':actor,'reason':reason}), attempt['id']))
         return self.detail(receipt_id)
 

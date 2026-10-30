@@ -1,6 +1,6 @@
 # Data Dictionary
 
-Scope: current application contracts, updated 2026-10-26. The durable schema v3 is implemented below; the [2.0 proposal](INTAKE_2_0_PROPOSAL.md) preserves the original design intent.
+Scope: current application contracts, updated 2026-10-26. The durable schema v4 is implemented below; the [2.0 proposal](INTAKE_2_0_PROPOSAL.md) preserves the original design intent.
 
 Legacy generated QA/comparison tables are replaced by pipeline runs. Compatibility workflow tables persist separately, but general QA detail depends on the current batch. Legacy row IDs/provider keys are distinct from durable receipt and location identities.
 
@@ -192,3 +192,19 @@ All populated cells, including identifiers, dates and formula-like `=`, `+`, `-`
 For clinic files, longitudinal identity is source scope plus source-native `record_id` and supplied `location_id`; neither row number, bytes nor provider label is an identity. Every duplicate/conflicting key is quarantined. Preview counts distinguish raw rows and unique identities. A known invalid key is `blocked_invalid`; an unresolved row cannot suppress a baseline record's `missing` entry. The baseline is exactly one accepted attempt, never a union of latest keys from history. Its ID is pinned in `attempt.spec.baseline_attempt_id`, excluded from the interpretation fingerprint, and rechecked at acceptance. The mapping revision remains part of the fingerprint.
 
 Schema migration 3 adds the mapping table/index/guards and immutable attempt-spec guard, preserving existing tables/IDs/history/artifact links. Existing v1/v2 databases receive a `.pre-intake-v3.bak` SQLite backup before this additive transaction; fresh databases apply migrations 1–3. Migration and rollback rehearsals use owned copies. Back up the database and matching artifacts together.
+
+## Explicit organization/network records
+
+| Table | Grain and contract |
+| --- | --- |
+| organization | One opaque local organization ID with label/kind, issuing-namespace identifiers and accountable creation. Labels are not identity. |
+| network | One opaque payer-network ID, optionally referencing a known payer organization. Unknown owner remains null. |
+| practice_location | One explicit local practice location, optionally linked to an organization. NPI alone never chooses a location. |
+| identity_binding | One immutable reviewed source/kind/exact-key revision. Typed organization/network/location FKs and a kind CHECK require one valid target; previous revision and expected-current checks retain corrections without rewriting earlier evidence. |
+| participation_observation | One accepted source assertion linked by observation_id. Native key, provider, local location, network, optional supplied organization, mapping revision, source-listed status, reported dates, binding snapshot and original labels remain separate. |
+| case_scope | One new network-review case's explicit network/location/native-key scope, with supplied organization when known. Existing clinic case IDs are unchanged. |
+| participation_review_evidence | One append-only comparison-evidence link to a case and processing attempt. Source comparison evidence is separate from human work events. |
+
+Network longitudinal identity is source/dataset scope + native participation key + provider + explicitly bound practice location + network. Rows in different networks or at different locations cannot collide. Original source codes and as-imported labels stay in original/normalized payloads; binding corrections create new interpretations. The source-listed status/effective/end dates never establish human verification, licensing, credentialing or patient benefits. Invalid or contradictory dates quarantine the row.
+
+Schema migration 4 adds these tables, typed FKs, scope index and immutable-record guards. It never backfills network membership for old rows or rebuilds existing cases. Existing databases are backed up with SQLite's backup API to `.pre-intake-v4.bak` before the transaction; migration rollback/integrity/FK and populated v3 preservation are rehearsed on owned copies. Keep each database with its matching artifact root.

@@ -1,0 +1,14 @@
+.ns-setup { margin-block: 1rem; }
+.ns-setup > summary { cursor: pointer; }
+.ns-setup[open] > summary { margin-bottom: 1rem; }
+.ns-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap: 1rem; margin-block: 1rem; }
+.ns-grid form, .ns-binding { border: 1px solid var(--line,#d8dfe2); border-radius: .5rem; padding: .75rem; }
+.ns-form-fields { border: 0; margin: 0; padding: 0; min-width: 0; }
+.ns-grid label, .ns-binding label, .ns-roster label { display: block; margin-block: .5rem; }
+.ns-grid input, .ns-grid select, .ns-binding input, .ns-binding select, .ns-roster select { display: block; width: 100%; min-width: 0; }
+.ns-grid button, .ns-binding button { margin-top: .5rem; }
+.ns-list { overflow-wrap: anywhere; }
+.ns-roster { margin-block: 1rem; padding: .75rem; border: 1px solid var(--line,#d8dfe2); border-radius: .5rem; }
+.ns-roster fieldset { border: 1px solid var(--line,#d8dfe2); margin-block: .65rem; min-width: 0; }
+.ns-roster .ns-checkbox { display: flex; align-items: start; gap: .5rem; overflow-wrap: anywhere; }
+.ns-roster .ns-checkbox input { width: auto; flex: 0 0 auto; margin-top: .2rem; }

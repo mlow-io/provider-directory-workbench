@@ -39,14 +39,21 @@ def create_workbench(path: Path | None = None, root: Path | None = None, *, demo
         return store.inbox()
 
     @app.post('/api/intakes/files')
-    async def upload(request: Request, filename: str, source: str = 'clinic', designation: str = 'synthetic', profile: str = 'flat'):
+    async def upload(request: Request, filename: str, source: str = 'clinic', designation: str = 'synthetic', profile: str = 'flat', dataset_scope: str | None = None, completeness: str = 'unknown', as_of: str | None = None):
+        if completeness not in {'unknown','bounded','full'}:
+            raise ValueError('Choose unknown, bounded or full declared completeness')
+        if as_of:
+            from datetime import date
+            if date.fromisoformat(as_of).isoformat() != as_of:
+                raise ValueError('as_of must use YYYY-MM-DD')
+        metadata = {'scope': dataset_scope, 'completeness': completeness, 'as_of': as_of}
         payload = bytearray()
         async for chunk in request.stream():
             payload.extend(chunk)
             if len(payload) > MAX_BYTES:
                 raise ValueError('Artifact limit is 10 MiB')
         # Bounded parsing runs off the event loop, so receipt/status reads remain responsive.
-        return bounded(await run_in_threadpool(store.receive, bytes(payload), filename, source, designation, profile))
+        return bounded(await run_in_threadpool(store.receive, bytes(payload), filename, source, designation, profile, metadata))
 
     def bounded(result):
         # Full evidence is downloadable; interactive responses have bounded samples.
@@ -176,6 +183,18 @@ def create_workbench(path: Path | None = None, root: Path | None = None, *, demo
                 failure = next((r for r in rows if json.loads(r['metadata']).get('error')), None)
                 items.append({'source': source, 'adapter_version': '1', 'scope': 'Bounded public reference; not certified truth or complete directory', 'last_success': success['received_at'] if success else None, 'last_failure': json.loads(failure['metadata']) if failure else None, 'metadata': json.loads(success['metadata']) if success else {}})
         return {'items': items}
+
+    @app.get('/api/catalog')
+    def catalog():
+        return store.catalog()
+
+    @app.post('/api/catalog/bindings')
+    def bind_source(payload: dict):
+        return store.bind_source(payload)
+
+    @app.post('/api/catalog/{kind}')
+    def create_catalog(kind: str, payload: dict):
+        return store.create_catalog(kind, payload)
 
     @app.get('/api/work')
     def work():

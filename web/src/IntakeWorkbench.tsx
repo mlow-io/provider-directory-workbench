@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./intake.css";
 import { RecurringImport, type DeliveryComparison } from "./RecurringImport";
+import { NetworkSetup, RosterConfiguration, emptyRosterBindings, type RosterBindings } from "./NetworkSetup";
 
 type JsonObject = Record<string, unknown>;
 type PreviewRow = {
@@ -31,6 +32,9 @@ type Attempt = {
     encoding?: string;
     delimiter?: string;
     mapping_revision_id?: string | null;
+    roster_kind?: "clinic" | "network";
+    bindings?: RosterBindings;
+    fixed_network_binding_id?: string | null;
   };
   [key: string]: unknown;
 };
@@ -238,7 +242,10 @@ function IntakeInbox() {
   const [selected, setSelected] = useState("");
   const [source, setSource] = useState("clinic"),
     [designation, setDesignation] = useState("synthetic"),
-    [profile, setProfile] = useState("flat");
+    [profile, setProfile] = useState("flat"),
+    [datasetScope, setDatasetScope] = useState(""),
+    [completeness, setCompleteness] = useState("unknown"),
+    [asOf, setAsOf] = useState("");
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [file, setFile] = useState<File | null>(null);
@@ -311,6 +318,7 @@ function IntakeInbox() {
           </p>
         </section>
       )}
+      <NetworkSetup source={source} />
       <ErrorMessage error={error} />
       <section className="iw-card">
         <div className="iw-title">
@@ -330,7 +338,12 @@ function IntakeInbox() {
             if (file)
               void run(() =>
                 request(
-                  `/intakes/files?${new URLSearchParams({ filename: file.name, source, designation, profile })}`,
+                  `/intakes/files?${new URLSearchParams({
+                    filename: file.name, source, designation, profile,
+                    ...(datasetScope.trim() ? {dataset_scope:datasetScope.trim()} : {}),
+                    completeness,
+                    ...(asOf ? {as_of:asOf} : {}),
+                  })}`,
                   undefined,
                   file,
                 ),
@@ -367,6 +380,21 @@ function IntakeInbox() {
               <option value="cms">CMS clinician response</option>
             </select>
           </label>
+          <details className="iw-file">
+            <summary>Delivery scope and source date (optional)</summary>
+            <p className="iw-muted">These describe the supplied dataset. A reported date is not a verification date or a provider identity.</p>
+            <label>Dataset scope
+              <input value={datasetScope} onChange={(e) => setDatasetScope(e.target.value)} placeholder="Exact source-defined scope" />
+            </label>
+            <label>Completeness
+              <select value={completeness} onChange={(e) => setCompleteness(e.target.value)}>
+                <option value="unknown">Unknown</option><option value="bounded">Bounded extract</option><option value="full">Source-declared full scope</option>
+              </select>
+            </label>
+            <label>Source as-of date
+              <input type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)} />
+            </label>
+          </details>
           <label className="iw-file">
             Source file
             <input
@@ -544,6 +572,13 @@ const fields = [
   "location_id",
   "listing_id",
   "reference_phone",
+  "network_code",
+  "organization_code",
+  "network_label",
+  "organization_label",
+  "participation_status",
+  "effective_date",
+  "end_date",
 ];
 function ReceiptDetail({
   id,
@@ -559,6 +594,9 @@ function ReceiptDetail({
     [header, setHeader] = useState("1"),
     [encoding, setEncoding] = useState("utf-8-sig"),
     [delimiter, setDelimiter] = useState(",");
+  const [rosterKind,setRosterKind] = useState<"clinic"|"network">("clinic"),
+    [rosterBindings,setRosterBindings] = useState<RosterBindings>(emptyRosterBindings),
+    [fixedNetworkBindingId,setFixedNetworkBindingId] = useState("");
   const [actor, setActor] = useState(""),
     [reason, setReason] = useState(""),
     [error, setError] = useState(""),
@@ -571,13 +609,19 @@ function ReceiptDetail({
       setHeader(String(spec?.header_row ?? 1));
       setEncoding(spec?.encoding ?? "utf-8-sig");
       setDelimiter(spec?.delimiter ?? ",");
+      setRosterKind(spec?.roster_kind ?? "clinic");
+      setRosterBindings(spec?.bindings ?? emptyRosterBindings());
+      setFixedNetworkBindingId(spec?.fixed_network_binding_id ?? "");
     }
   }, [detail]);
   const run = async (path: string, body: unknown) => {
     setBusy(true);
     setError("");
     try {
-      await request(`/intakes/${id}/${path}`, body);
+      const requestBody = path === "mapping" && body && typeof body === "object" && !("mapping_revision_id" in body) && rosterKind === "network"
+        ? {...body,roster_kind:"network",bindings:rosterBindings,...(fixedNetworkBindingId ? {fixed_network_binding_id:fixedNetworkBindingId} : {})}
+        : body;
+      await request(`/intakes/${id}/${path}`, requestBody);
       await resource.refresh();
       await changed();
     } catch (e) {
@@ -682,6 +726,16 @@ function ReceiptDetail({
             )}
           >
             <summary>Column mapping and parsing</summary>
+            <RosterConfiguration
+              source={detail.source ?? ""}
+              kind={rosterKind}
+              bindings={rosterBindings}
+              fixedNetworkBindingId={fixedNetworkBindingId}
+              busy={busy}
+              onKind={setRosterKind}
+              onBindings={setRosterBindings}
+              onFixedNetworkBindingId={setFixedNetworkBindingId}
+            />
             <form
               onSubmit={(e) => {
                 e.preventDefault();
