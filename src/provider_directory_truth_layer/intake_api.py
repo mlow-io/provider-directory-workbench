@@ -54,6 +54,11 @@ def create_workbench(path: Path | None = None, root: Path | None = None, *, demo
             result['preview']['rows'] = result['preview']['rows'][:50]
         for attempt in result.get('attempts', []):
             attempt['preview']['rows'] = attempt['preview'].get('rows', [])[:50]
+        for preview in [result.get('preview'), *[attempt.get('preview') for attempt in result.get('attempts', [])]]:
+            if preview and preview.get('comparison', {}).get('entries') is not None:
+                comparison = preview['comparison']
+                comparison['entry_count'] = max(comparison.get('entry_count', 0), len(comparison['entries']))
+                comparison['entries'] = comparison['entries'][:50]
         for field in ['observations', 'linked_cases']:
             result[field + '_count'] = len(result.get(field, []))
             result[field] = result.get(field, [])[:50]
@@ -83,6 +88,14 @@ def create_workbench(path: Path | None = None, root: Path | None = None, *, demo
     @app.get('/api/intakes/{receipt_id}')
     def detail(receipt_id: str):
         return bounded(store.detail(receipt_id))
+
+    @app.get('/api/intakes/{receipt_id}/saved-mappings')
+    def saved_mappings(receipt_id: str):
+        return store.saved_mappings(receipt_id)
+
+    @app.post('/api/intakes/{receipt_id}/saved-mappings')
+    def save_mapping(receipt_id: str, payload: dict):
+        return store.save_mapping(receipt_id, payload)
 
     @app.post('/api/intakes/{receipt_id}/mapping')
     def mapping(receipt_id: str, payload: dict):

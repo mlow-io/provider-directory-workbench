@@ -1,6 +1,6 @@
 # Data Dictionary
 
-Scope: current application contracts, updated 2026-10-26. The durable schema v2 is implemented below; the [2.0 proposal](INTAKE_2_0_PROPOSAL.md) preserves the original design intent.
+Scope: current application contracts, updated 2026-10-26. The durable schema v3 is implemented below; the [2.0 proposal](INTAKE_2_0_PROPOSAL.md) preserves the original design intent.
 
 Legacy generated QA/comparison tables are replaced by pipeline runs. Compatibility workflow tables persist separately, but general QA detail depends on the current batch. Legacy row IDs/provider keys are distinct from durable receipt and location identities.
 
@@ -184,3 +184,11 @@ Full export reads are not limited by the UI's 50 observation sample, eight visib
 All populated cells, including identifiers, dates and formula-like `=`, `+`, `-`, `@` strings, are literal text with no executable formulas or hyperlinks. Null displays as a blank cell; empty text displays as two quotes. JSON payloads preserve the exact distinction, types and originals. Prohibited XML controls in scalar displays are escaped. ASCII JSON is split into numbered chunks of at most 30,000 characters rather than silently hitting Excel's cell limit. The JSON payload is authoritative for exact values.
 
 `listed_value` and `requested_value` are initial source assertions; `approved_value` is the current human proposal; `observed_value` may represent a failed verification. A populated observation does not imply verified status. Source update/retrieval/receipt dates do not establish human verification. Human verification actions, times and notes remain Decisions records; the original observation's `human_verified_at` is not rewritten by workflow review.
+
+## Recurring interpretation revisions
+
+`mapping_revision` stores one immutable reviewed source/profile/scope-specific template: opaque ID/name, effective column/parsing settings, required header names, actor/reason and creation time. Update/delete guards preserve every revision. Attempts retain their own immutable `spec` and fingerprint; accepting an attempt updates its state/decision, never its interpretation. Saving/applying a template is separate from acceptance.
+
+For clinic files, longitudinal identity is source scope plus source-native `record_id` and supplied `location_id`; neither row number, bytes nor provider label is an identity. Every duplicate/conflicting key is quarantined. Preview counts distinguish raw rows and unique identities. A known invalid key is `blocked_invalid`; an unresolved row cannot suppress a baseline record's `missing` entry. The baseline is exactly one accepted attempt, never a union of latest keys from history. Its ID is pinned in `attempt.spec.baseline_attempt_id`, excluded from the interpretation fingerprint, and rechecked at acceptance. The mapping revision remains part of the fingerprint.
+
+Schema migration 3 adds the mapping table/index/guards and immutable attempt-spec guard, preserving existing tables/IDs/history/artifact links. Existing v1/v2 databases receive a `.pre-intake-v3.bak` SQLite backup before this additive transaction; fresh databases apply migrations 1–3. Migration and rollback rehearsals use owned copies. Back up the database and matching artifacts together.

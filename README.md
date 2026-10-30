@@ -60,7 +60,7 @@ PDTL_ROOT=.runtime/my-work PYTHONPATH=src python3 -m provider_directory_truth_la
 
 Service startup never runs the pipeline or deletes data. `make demo` explicitly refreshes only the legacy synthetic projection in its demo root. `make validate` creates an invocation-owned fixture root. `make clean` deletes nothing. Playwright creates its own temporary database and uses known ports 8100/5180 without server reuse.
 
-Schema migrations 1 and 2 are additive, transactional, and reject unknown future versions. Legacy upgrade backups are created with SQLite's backup API. Existing source/runtime originals are not automatically migrated. New intake event rows have database update/delete guards and expected-version checks. Per-connection foreign keys, WAL, and a 10-second busy timeout are configured. Direct database editing is outside the application trust boundary.
+Schema migrations 1–3 are additive, transactional, and reject unknown future versions. Legacy upgrade backups are created with SQLite's backup API. Existing source/runtime originals are not automatically migrated. New intake event rows have database update/delete guards and expected-version checks. Per-connection foreign keys, WAL, and a 10-second busy timeout are configured. Direct database editing is outside the application trust boundary.
 
 On restart, unfinished processing attempts become `interrupted`; reprocess the retained receipt. `artifact-recovery.json` reports staged, unregistered, or missing artifacts without deleting or accepting them. Accepted observations and linked work commit together. Export files are projections, not the database of record.
 
@@ -80,8 +80,6 @@ Artifact limit: 10 MiB; tabular row limit: 20,000. Interactive evidence samples 
 On the qualification machine, a synthetic 20,000-row CSV preview took 1.14 seconds and acceptance 9.86 seconds at about 312 MiB peak process RSS. This does not establish equivalent XLSX or multi-writer performance. Reproduce with `PYTHONPATH=src python3 scripts/benchmark_intake.py 20000`.
 
 ## Checks
-
-The [2026-10-30 core snapshot](docs/evidence/data_operations/p0/README.md) passed fresh isolated setup and all required local checks.
 
 The 2026-10-23 G0–G5 baseline passed 103 Python tests, three frontend tests and 12 browser scenarios. The employer-readiness follow-up adds guided samples and XLSX handoff coverage; see the [dated follow-up evidence](docs/evidence/employer_readiness/README.md) for screenshots and restart rehearsal, and the [subsequent hardening checks](docs/evidence/employer_readiness/hardening/README.md) for 124 Python tests, six frontend tests and 14 browser scenarios. Pipeline validation and production build remain required.
 
@@ -105,9 +103,13 @@ Run read-only questions against an existing durable intake database: follow-up c
 PYTHONPATH=src python3 -m provider_directory_truth_layer.operations_sql --db .runtime/my-work/directory.sqlite3 follow-up --as-of 2026-10-30
 ```
 
+## Recurring clinic files
+
+After reviewing a ready file, expand recurring import review and save a named mapping revision. Upload changed bytes in the same source scope, select the saved revision, and apply it. Inspect the single accepted baseline, old/new fields, blocked-invalid rows and missing records before accepting. Missing required headers pause acceptance; unknown columns remain in the original. If another delivery is accepted first, refresh comparison and review again. See [API](docs/API_REFERENCE.md#recurring-file-intake-schema-v3) and [workflow](docs/OPERATIONS_WORKFLOW.md#recurring-clinic-deliveries).
+
 ## Planned next phase
 
-The [near-term delivery plan](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) prioritizes the current core as a reviewed publication candidate, a small read-only SQL example pack, then saved source mappings and readable delivery comparisons. [Organization/network participation storage](docs/INTAKE_2_0_PROPOSAL.md#proposed-next-phase-recurring-organization-and-network-rosters) follows that checkpoint. These are planned deliverables, not newly implemented or published capabilities. Clinics/health systems remain organizations; payer-network participation is a separate source-asserted relationship.
+The [near-term delivery plan](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) prioritizes the current core as a reviewed publication candidate, the implemented operational SQL pack and recurring clinic imports. [Organization/network participation storage](docs/INTAKE_2_0_PROPOSAL.md#proposed-next-phase-recurring-organization-and-network-rosters) follows that checkpoint. These are planned deliverables, not newly implemented or published capabilities. Clinics/health systems remain organizations; payer-network participation is a separate source-asserted relationship.
 
 The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) specify the additions, documentation and acceptance evidence for each PR. Feature claims follow verified behavior; GitHub publication status is tracked separately from local qualification.
 

@@ -4,6 +4,8 @@ Updated 2026-10-30. Local Intake Workbench 2.0; original G0–G5 baseline and th
 
 ## Implemented behavior
 
+- Reviewed immutable recurring clinic mapping revisions, required-header drift handling, one displayed accepted baseline, valid-only old/new field comparisons and stale-baseline acceptance checks. Schema v3 preserves prior records and interpretation settings.
+
 - Read-only operational SQL and parameterized Python runner for follow-up, receipt lineage, latest events and two explicitly selected accepted-delivery comparisons; fixture coverage for nulls, absent evidence, fan-out, tied events and durable read-only checks.
 
 - String-safe legacy QA pipeline and preserved current-batch review/remediation compatibility views; source updates are separate from human verification.
@@ -11,7 +13,7 @@ Updated 2026-10-30. Local Intake Workbench 2.0; original G0–G5 baseline and th
 - Native NPPES and CMS Doctors and Clinicians adapters, bounded public reads, raw response/error retention, dataset metadata, fifteen-minute retained-response replay and asserted unfetched links. Multiple locations/taxonomies and clinician/enrollment/group/address grain remain inspectable.
 - Stable source/provider/location/native-key work with initial snapshots and later observations; explicit audited practice-location crosswalks; ownership, needs information, follow-up and explained risk; stale-preview/case conflict checks and atomic event/projection updates.
 - Distinct QA disposition and correction approval/simulated submission/observed verification/reopen. Current operational correction scope is explicit location phone requests, with legacy configured payer-field comparison separately available.
-- Schema v2 numbered transactional migration, backups and future-schema rejection; SQLite foreign keys/WAL/busy timeout; retained artifact recovery report; invocation-owned validation/browser/demo storage.
+- Schema v3 numbered transactional migration, backups and future-schema rejection; SQLite foreign keys/WAL/busy timeout; retained artifact recovery report; invocation-owned validation/browser/demo storage.
 - Intake/Work queue/Sources navigation, desktop/phone layouts, keyboard controls, loading/empty/failure/retry states, retained conflict drafts, full evidence packets, and one offline demo launcher.
 - Explicit offline synthetic sample picker through normal intake, editable suggested workbook columns and operator acceptance; ordinary service startup keeps sample loading disabled. Repeated fixture bytes stay stable across restarts.
 - Read-only all-durable-work/selected-case XLSX handoff with current ownership/follow-up, scoped evidence/receipt/row locators, complete history and chunked original payloads from a consistent SQLite snapshot. All-work export explicitly ignores queue filters.
@@ -30,7 +32,7 @@ Integrated bounded live NPPES and CMS reads succeeded on 2026-10-23, one record 
 
 The service uses bounded worker-thread requests and persisted attempts, not a separate persistent job queue. Initial operational comparison is location phone listed-versus-requested; there is no generalized reconciliation engine. Legacy QA remains a generated current-batch compatibility view; old originals are never fabricated. New intake work is durable.
 
-Current delivery comparison takes the latest observation per native key across source history and classifies parsed rows including quarantine. It does not establish a single accepted-delivery or prospective accepted-row diff. The planned N1 slice explicitly addresses baseline selection and present-but-invalid rows before expanding comparisons to networks.
+Clinic file comparison now pins one accepted delivery and handles valid, invalid known-key and unresolved rows separately. Public native JSON retains its earlier reference comparison behavior; organization/network expansion remains planned.
 
 Artifact cap is 10 MiB and tabular cap 20,000 rows. Interactive samples cap at 50 observations; queue renders 200 matches over loaded summaries. A measured 20,000-row synthetic CSV took 1.14 s preview and 9.86 s acceptance with roughly 312 MiB process RSS; XLSX/concurrent-writer equivalence is not established. Public reads are bounded pages and may fail or quarantine incomplete records.
 
@@ -40,9 +42,11 @@ Names/verification inputs are locally asserted, no authentication or external pa
 
 The [next-phase proposal](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) now advances from the core and operational SQL to N1 saved mappings/readable accepted-delivery comparisons. Organization/network participation storage and N2–N4 remain planned after that usable checkpoint. This is proposed work: the catalog, participation model, mapping migration and recurring-import API remain planned. Existing scope exclusions remain in place.
 
-The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) define P0–P3. The implemented core is documented above; P1 operational SQL is implemented; N1–N4 recurring import/network features remain planned. The [2026-10-30 snapshot qualification](docs/evidence/data_operations/p0/README.md) passed 124 Python tests, pipeline validation, six frontend tests, build and 14 browser scenarios. Remote CI is recorded independently after publication.
+The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) define P0–P3. The implemented core is documented above; P1 operational SQL is implemented; N1 recurring clinic import is implemented; N2–N4 network features remain planned. The [2026-10-30 snapshot qualification](docs/evidence/data_operations/p0/README.md) passed 124 Python tests, pipeline validation, six frontend tests, build and 14 browser scenarios. Remote CI is recorded independently after publication.
 
 
 ## Contributor navigation
 
 Read [README](README.md), [AGENTS](AGENTS.md), [execution checkpoint](docs/INTAKE_2_0_PROGRESS.md), [architecture decisions](docs/DECISIONS.md), and [demo procedure](docs/operations_governance/sop_provider_remediation.md). Historical handoff/review findings remain dated evidence; the current dispositions and checks are linked rather than rewriting reproductions.
+
+The [recurring-clinic qualification](docs/evidence/data_operations/n1/README.md) passed 141 Python tests, pipeline validation, eight frontend tests, build and 16 browser scenarios, plus actual restart/repeat/packet evidence. N2–N4 remain planned.

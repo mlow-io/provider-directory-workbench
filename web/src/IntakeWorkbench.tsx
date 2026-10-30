@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./intake.css";
+import { RecurringImport, type DeliveryComparison } from "./RecurringImport";
 
 type JsonObject = Record<string, unknown>;
 type PreviewRow = {
@@ -9,7 +10,7 @@ type PreviewRow = {
   problems?: string[];
 };
 type Preview = {
-  comparison?: JsonObject;
+  comparison?: DeliveryComparison;
   headers?: string[];
   sheets?: string[];
   sheet?: string;
@@ -23,11 +24,13 @@ type Preview = {
 };
 type Attempt = {
   id?: string;
+  mapping_revision_id?: string | null;
   spec?: {
     header_row?: number;
     sheet?: string;
     encoding?: string;
     delimiter?: string;
+    mapping_revision_id?: string | null;
   };
   [key: string]: unknown;
 };
@@ -578,7 +581,10 @@ function ReceiptDetail({
       await resource.refresh();
       await changed();
     } catch (e) {
-      setError((e as Error).message);
+      const message = (e as Error).message;
+      setError(path === "commit" && /baseline|stale/i.test(message)
+        ? `${message} Refresh comparison and review the updated changes before accepting. Your reviewer and reason are preserved.`
+        : message);
     } finally {
       setBusy(false);
     }
@@ -644,12 +650,23 @@ function ReceiptDetail({
       {preview && (
         <>
           <h3>Interpretation preview</h3>
-          {preview.comparison && (
-            <details>
-              <summary>Comparison with prior source deliveries</summary>
-              <Json value={preview.comparison} />
-            </details>
-          )}
+          <RecurringImport
+            receiptId={id}
+            state={detail.state ?? ""}
+            attemptId={detail.attempt_id ?? ""}
+            appliedRevisionId={detail.attempts?.at(-1)?.spec?.mapping_revision_id ?? detail.attempts?.at(-1)?.mapping_revision_id ?? null}
+            comparison={preview.comparison}
+            effectiveMapping={preview.mapping ?? {}}
+            parsing={{
+              sheet: detail.attempts?.at(-1)?.spec?.sheet ?? preview.sheet ?? "",
+              header_row: detail.attempts?.at(-1)?.spec?.header_row ?? 1,
+              encoding: detail.attempts?.at(-1)?.spec?.encoding ?? "utf-8-sig",
+              delimiter: detail.attempts?.at(-1)?.spec?.delimiter ?? ",",
+            }}
+            busy={busy}
+            onRun={run}
+            onChanged={async () => { await resource.refresh(); await changed(); }}
+          />
           {preview.error && (
             <p className="iw-error" role="alert">
               {preview.error}

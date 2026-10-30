@@ -144,3 +144,9 @@ The legacy pipeline receives several synthetic sources in one harmonized CSV. It
 The October missing-NPI/leading-zero ZIP and source-update-as-verification defects now have fixes and regression tests. Normalization still does not establish the accuracy of source evidence. The [dated review](INTAKE_2_0_REVIEW.md) preserves the original reproduction, with current dispositions and qualification linked separately.
 
 Validation and browser runs own separate fixture roots; API startup never reseeds evidence. Preserve a working database and its matching artifact root together. Durable work exports use a read-only SQLite snapshot and include all or one selected case; the all-work workbook ignores UI filters. Exports do not accept, resolve, verify or change work. See the [workbook contract](DATA_DICTIONARY.md#durable-work-handoff-workbook).
+
+## Recurring clinic deliveries
+
+After reviewing a ready file preview, save its mapping revision with a name/reviewer/reason. On a new file in the same source scope, select that revision and apply it; acceptance remains a separate decision. Reordered columns are safe, extra source columns stay retained, and missing selected headers require renewed review.
+
+Expand the accepted-delivery comparison to see the exact baseline, raw/unique counts and filterable old/new fields with locators. Inspect blocked/quarantined and unresolved rows separately. Missing means absent only. If acceptance reports a changed baseline, refresh comparison, review the new previous values and retry with an explanation. Original observations, ownership and human verification history remain intact through repeats/restarts. The [SQL selected-delivery tool](OPERATIONAL_SQL.md) still asks the operator to choose its two accepted attempts explicitly.

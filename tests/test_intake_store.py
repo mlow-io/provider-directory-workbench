@@ -338,7 +338,7 @@ def test_real_bounds_formulas_and_formatted_numeric_zip(store):
     sheet.append(list(values.values()))
     cell=sheet.cell(2,list(values).index('zip')+1)
     cell.value=1234;cell.number_format='00000'
-    sheet.append(list(values.values()))
+    sheet.append(list({**values, 'record_id': 'FORMULA-ROW'}.values()))
     sheet.cell(3,list(values).index('phone')+1).value='=1+1'
     stream=io.BytesIO();workbook.save(stream)
     receipt=store.receive(stream.getvalue(),'numeric-zip.xlsx')
@@ -372,7 +372,7 @@ def test_version_one_upgrade_keeps_data_and_backup(tmp_path):
         conn.execute("insert into artifact values ('existing',1,'existing')")
     upgraded=IntakeStore(path,tmp_path)
     with upgraded.db() as conn:
-        assert conn.execute('pragma user_version').fetchone()[0]==2
+        assert conn.execute('pragma user_version').fetchone()[0]==intake_store.VERSION
         assert conn.execute('select sha from artifact').fetchone()[0]=='existing'
         assert 'location_index' in [r[1] for r in conn.execute('pragma table_info(relationship)')]
     with sqlite3.connect(path.with_name('v1.db.pre-intake-v2.bak')) as backup:

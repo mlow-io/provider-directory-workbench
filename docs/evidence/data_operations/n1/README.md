@@ -1,0 +1,11 @@
+# Recurring clinic intake qualification — 2026-10-30
+
+The sanitized source candidate passed **141 Python tests**, isolated pipeline validation (12 records/11 findings/six discrepancies), **eight frontend tests**, production build and **16 desktop/phone scenarios**. No final failures/skips. One upstream TestClient deprecation warning remains. [Python](pytest.txt), [pipeline](validate.txt), [frontend](frontend.txt), [build](build.txt), [browser](browser.txt).
+
+The browser saves a reviewed mapping, accepts a baseline, reuses the mapping across reordered columns/changed bytes, reads old/new phone values, rejects stale acceptance after an intervening delivery, refreshes and accepts, inspects downloaded complete packet entries, and blocks missing headers. Rendered [desktop](comparison-wide.png) and [phone](comparison-mobile.png) comparisons were inspected; overflow assertions pass.
+
+Store/HTTP regressions cover extra/missing headers, source/scope mismatch, new/changed/unchanged/missing, known invalid versus unresolved identity, duplicate/conflicting keys, immutable revisions, changed mapping fingerprints, idempotent repeats, restart, single-baseline history and injected acceptance rollback. HTTP comparison samples stop at 50 while the downloaded packet retains all 60 tested entries and revision IDs. Populated v2 migration retains original records/events/artifact bytes with backup, integrity and FK checks.
+
+A real offline launcher rehearsal accepted two deliveries, assigned an owner, stopped/resumed the same root, repeated a saved interpretation and inspected XLSX. Restart retained exact rows (two receipts/three attempts/four observations/two cases/one event/one revision) and seven input/artifact hashes; repeat added no duplicate work. [Summary](restart-summary.json).
+
+Initial browser runs caught a hidden-cell selector and old-receipt upload synchronization races; tests now await the new displayed delivery identity and inspect the intended evidence region. Exact failure logs/traces and launcher controller remain locally retained. The passing candidate also retains the core's 14 browser scenarios. Source values remain assertions, missing means absent only, and native public JSON reference comparisons remain separate. No external payer updates or production-scale claim.

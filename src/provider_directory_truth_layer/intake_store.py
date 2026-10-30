@@ -26,7 +26,7 @@ MAX_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 20_000
 FIELDS = ['record_id', 'npi', 'provider_name', 'address', 'city', 'state', 'zip', 'phone', 'location_id', 'listing_id', 'reference_phone', 'specialty', 'status', 'source_updated_at']
 REQUIRED = ['npi', 'provider_name', 'address', 'city', 'state', 'zip', 'phone']
-VERSION = 2
+VERSION = 3
 
 
 def now() -> str:
@@ -125,6 +125,14 @@ class IntakeStore:
                         with sqlite3.connect(backup) as target:
                             conn.backup(target)
                 conn.executescript("BEGIN IMMEDIATE; ALTER TABLE relationship ADD COLUMN location_index integer; INSERT INTO schema_migration VALUES (2, datetime('now')); PRAGMA user_version=2; COMMIT;")
+            if version < 3:
+                from .recurring import MIGRATION_3
+                if version >= 1:
+                    backup = self.path.with_name(self.path.name + '.pre-intake-v3.bak')
+                    if not backup.exists():
+                        with sqlite3.connect(backup) as target:
+                            conn.backup(target)
+                conn.executescript("BEGIN IMMEDIATE;\n" + MIGRATION_3 + "\nINSERT INTO schema_migration VALUES (3, datetime('now')); PRAGMA user_version=3; COMMIT;")
             # A killed process can leave a processing marker, but no partial committed batch.
             conn.execute("update attempt set state='interrupted' where state='processing'")
 
@@ -158,7 +166,9 @@ class IntakeStore:
             conn.execute('insert into receipt values (?,?,?,?,?,?,?,?,?)', (receipt_id, Path(filename).name, source.strip(), designation, now(), sha, profile, duplicate[0] if duplicate else None, packed(metadata or {})))
         with self.db() as conn:
             prior = conn.execute("select a.spec from attempt a join receipt r on r.id=a.receipt_id where r.artifact_sha=? and r.source=? and r.profile=? and a.state='committed' order by a.created_at desc limit 1", (sha,source,profile)).fetchone()
-        settings = {k:v for k,v in json.loads(prior[0]).items() if k not in {'adapter_version','profile'}} if prior else {}
+        settings = {k:v for k,v in json.loads(prior[0]).items() if k not in {'adapter_version','profile','baseline_attempt_id'}} if prior else {}
+        if settings.get('mapping_revision_id'):
+            settings = {'mapping_revision_id': settings['mapping_revision_id']}
         self.mapping(receipt_id, settings)
         return self.detail(receipt_id)
 
@@ -226,12 +236,67 @@ class IntakeStore:
                 raise ValueError('Row limit is 20,000; split the artifact')
         return rows, headers, [], False
 
-    def mapping(self, receipt_id: str, settings: dict):
+    def saved_mappings(self, receipt_id):
+        from .recurring import scope
         with self.db() as conn:
             receipt = self._receipt(conn, receipt_id)
-        spec = {'adapter_version': '1', 'profile': receipt['profile'], **settings}
+            items = [dict(row) for row in conn.execute(
+                'SELECT * FROM mapping_revision WHERE source=? AND profile=? ORDER BY created_at DESC,id DESC',
+                (receipt['source'], receipt['profile'])) if json.loads(row['scope']) == scope(receipt)]
+        for row in items:
+            for key in ('scope', 'settings', 'required_headers'):
+                row[key] = json.loads(row[key])
+        return {'items': items}
+
+    def save_mapping(self, receipt_id, payload):
+        from .recurring import PARSING_FIELDS, scope
+        actor, reason, name = (self.required(payload, key) for key in ('actor', 'reason', 'name'))
+        with self.db() as conn:
+            conn.execute('begin immediate')
+            receipt = self._receipt(conn, receipt_id)
+            attempt = conn.execute('SELECT * FROM attempt WHERE receipt_id=? ORDER BY created_at DESC,id DESC LIMIT 1', (receipt_id,)).fetchone()
+            if attempt is None or payload.get('expected_attempt') != attempt['id']:
+                raise Conflict('Interpretation changed; review the current preview before saving a mapping')
+            preview, spec = json.loads(attempt['preview']), json.loads(attempt['spec'])
+            if attempt['state'] not in {'preview_ready', 'committed', 'duplicate_delivery'} or not preview.get('headers'):
+                raise ValueError('A ready tabular mapped preview is required before saving')
+            settings = {key: value for key, value in spec.items() if key in PARSING_FIELDS}
+            settings['mapping'] = preview['mapping']
+            revision = {'id': uid(), 'name': name, 'source': receipt['source'], 'profile': receipt['profile'],
+                        'scope': scope(receipt), 'settings': settings,
+                        'required_headers': sorted(set(preview['mapping'].values())),
+                        'actor': actor, 'reason': reason, 'created_at': now()}
+            conn.execute('INSERT INTO mapping_revision VALUES (?,?,?,?,?,?,?,?,?,?)',
+                         (revision['id'], name, receipt['source'], receipt['profile'], packed(revision['scope']),
+                          packed(settings), packed(revision['required_headers']), actor, reason, revision['created_at']))
+        return revision
+
+    def mapping(self, receipt_id: str, settings: dict):
+        from .recurring import scope, latest_baseline
+        settings = dict(settings)
+        settings.pop('baseline_attempt_id', None)  # Baselines are always pinned by the service.
+        required_headers = []
+        with self.db() as conn:
+            receipt = self._receipt(conn, receipt_id)
+            if settings.get('mapping_revision_id'):
+                revision_id = settings['mapping_revision_id']
+                # Revision settings are immutable: changing columns requires a new revision.
+                if set(settings) - {'mapping_revision_id', 'adapter_version', 'profile'}:
+                    raise ValueError('Saved mapping settings cannot be overridden; review a new revision')
+                revision = conn.execute('SELECT * FROM mapping_revision WHERE id=?', (revision_id,)).fetchone()
+                if revision is None:
+                    raise KeyError('Mapping revision not found')
+                if (revision['source'], revision['profile'], json.loads(revision['scope'])) != (receipt['source'], receipt['profile'], scope(receipt)):
+                    raise ValueError('Mapping revision has incompatible source, profile or scope')
+                required_headers = json.loads(revision['required_headers'])
+                settings = {**json.loads(revision['settings']), 'mapping_revision_id': revision_id}
+            recurring = receipt['profile'] == 'flat' and receipt['label'].lower().endswith(('.csv', '.xlsx'))
+            baseline = latest_baseline(conn, receipt) if recurring else None
+        spec = {**settings, 'adapter_version': '1', 'profile': receipt['profile']}
+        if recurring:
+            spec['baseline_attempt_id'] = baseline['id'] if baseline else None
         attempt_id = uid()
-        fingerprint = digest([receipt['source'], json.loads(receipt['metadata']).get('scope'), receipt['artifact_sha'], spec])
+        fingerprint = digest([receipt['source'], json.loads(receipt['metadata']).get('scope'), receipt['artifact_sha'], {key: value for key, value in spec.items() if key != 'baseline_attempt_id'}])
         with self.db() as conn:
             conn.execute('insert into attempt values (?,?,?,?,?,?,?,?,?)', (attempt_id, receipt_id, packed(spec), fingerprint, 'processing', '{}', now(), None, None))
         try:
@@ -241,8 +306,8 @@ class IntakeStore:
             mapping = {k:v for k,v in settings.get('mapping', {}).items() if v} or {key: key for key in FIELDS if key in headers}
             missing = [] if native else [key for key in REQUIRED if key not in mapping]
             unknown = [value for value in mapping.values() if value not in headers] if not native else []
-            if unknown:
-                raise ValueError('Mapped columns do not exist: ' + ', '.join(unknown))
+            missing_headers = sorted(set(required_headers) - set(headers))
+            header_error = ('Required headers missing: ' + ', '.join(missing_headers)) if missing_headers else ('Mapped columns do not exist: ' + ', '.join(unknown)) if unknown else None
             for row in rows:
                 original = row['original']
                 normalized = row.get('normalized', {}) if native else {key: str(original.get(column) or '').strip() for key, column in mapping.items()}
@@ -267,11 +332,18 @@ class IntakeStore:
                 normalized['phone'] = normalize_phone(phone)
                 normalized['zip'] = str(normalized.get('zip', ''))
                 normalized['state'] = str(normalized.get('state', '')).upper()
-            comparison = self.compare_delivery(receipt, rows)
+            if recurring:
+                from .recurring import mark_duplicate_keys, compare
+                mark_duplicate_keys(rows)
+                with self.db() as conn:
+                    comparison = compare(conn, receipt, rows, spec, baseline)
+            else:
+                comparison = self.compare_delivery(receipt, rows)
             preview = {'comparison': comparison, 'headers': headers, 'sheets': sheets, 'mapping': mapping, 'rows': rows,
                        'valid_count': sum(not r['problems'] for r in rows), 'quarantined_count': sum(bool(r['problems']) for r in rows),
-                       'total': len(rows), 'state': 'needs_mapping' if missing else 'preview_ready',
-                       'error': ('Map required fields: ' + ', '.join(missing)) if missing else None}
+                       'total': len(rows), 'mapping_revision_id': spec.get('mapping_revision_id'),
+                       'state': 'needs_mapping' if missing or header_error else 'preview_ready',
+                       'error': ('Map required fields: ' + ', '.join(missing)) if missing else header_error}
             with self.db() as conn:
                 prior = conn.execute("select id from attempt where fingerprint=? and state='committed' order by created_at limit 1", (fingerprint,)).fetchone()
                 if prior:
@@ -376,6 +448,12 @@ class IntakeStore:
             if attempt['state'] != 'preview_ready' and policy != 'reject':
                 raise ValueError('A valid mapped preview is required before acceptance')
             preview = json.loads(attempt['preview'])
+            spec = json.loads(attempt['spec'])
+            if policy == 'valid_rows' and 'baseline_attempt_id' in spec:
+                from .recurring import latest_baseline
+                baseline = latest_baseline(conn, receipt)
+                if spec['baseline_attempt_id'] != (baseline['id'] if baseline else None):
+                    raise Conflict('Accepted baseline changed since preview; refresh comparison and review before acceptance')
             previous = conn.execute("select id from attempt where fingerprint=? and state='committed' limit 1", (attempt['fingerprint'],)).fetchone()
             state = 'rejected' if policy == 'reject' else 'committed'
             if previous and state == 'committed':

@@ -39,3 +39,9 @@ A lookup can reuse a retained response for fifteen minutes, producing another re
 ## ADR 006: Verification without destructive setup
 
 Accepted. `PDTL_ROOT`/`PDTL_DB` configure owned paths across services and CLI. Service startup does not seed; validation gets a new directory each run. The demo launcher defaults to a fresh directory and resumes only when an explicit root is supplied. Browser setup uses new storage, no unknown-server reuse, sequential mutable scenarios, and separate synthetic source scopes. CI runs the same browser suite and retains failure traces. No checks require working runtime deletion.
+
+## ADR: reviewed recurring mappings and a single accepted baseline
+
+Keep recurring files in the existing receipt/attempt/observation service. Schema v3 adds immutable templates rather than rewriting previous mappings or creating another import subsystem. Every application of a template creates a retained attempt; source/profile/scope checks prevent accidental reuse across feeds. Header drift blocks acceptance, while unknown columns remain original evidence.
+
+A preview selects one accepted attempt and records its ID. Acceptance rechecks that ID in `BEGIN IMMEDIATE`, which serializes the baseline check with observation/case writes. This avoids accepting a comparison that went stale after another delivery. Repeats do not create a new baseline; interpretation identity excludes the preview context but includes mapping revision. Prospective changes use valid unique rows, with invalid known identities explicitly blocked and unresolved rows unable to hide absence. Existing native public-reference comparison semantics remain separate.

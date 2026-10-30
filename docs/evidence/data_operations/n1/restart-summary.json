@@ -1,0 +1,19 @@
+{
+  "restart_exact": true,
+  "counts_before_restart": {
+    "receipt": 2,
+    "attempt": 3,
+    "observation": 4,
+    "work_case": 2,
+    "work_evidence": 4,
+    "work_event": 1,
+    "mapping_revision": 1
+  },
+  "retained_hash_count": 7,
+  "repeat_state": "duplicate_delivery",
+  "owner": "Synthetic Owner",
+  "schema": 3,
+  "workbook_case_count": 2,
+  "integrity": "ok",
+  "foreign_key_violations": 0
+}

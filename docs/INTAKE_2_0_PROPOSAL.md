@@ -231,7 +231,9 @@ The shipped case study should describe implemented behavior and measured limits.
 
 ## Proposed next phase: recurring organization and network rosters
 
-Status: **Planned; not implemented.** Requested after application checkpoint `2a68c885033240bdf2681342bca0fc6013fe60c7`. This section owns the next scoped plan; the original proposal and completed qualification above remain historical. Prioritize the publishable core and read-only SQL examples below, then reusable source mappings and a readable change preview, followed by explicit organization/network participation storage through the existing intake service.
+Current disposition (2026-10-30): P1 operational SQL and N1 recurring clinic imports are implemented. [N1 qualification](evidence/data_operations/n1/README.md) records the passing local candidate and real operator evidence. N2–N4 remain in delivery; the requirements below remain the acceptance contract.
+
+Status: **N1 locally qualified; N2–N4 planned.** Requested after application checkpoint `2a68c885033240bdf2681342bca0fc6013fe60c7`. This section owns the next scoped plan; the original proposal and completed qualification above remain historical. Prioritize the publishable core and read-only SQL examples below, then reusable source mappings and a readable change preview, followed by explicit organization/network participation storage through the existing intake service.
 
 ### Near-term delivery priority: publishable core and transferable data work
 

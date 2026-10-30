@@ -44,3 +44,11 @@ A failed parse stays visible: correct header, encoding, delimiter or mapping and
 If interrupted while processing, restart and reprocess the receipt. Atomic acceptance leaves either the entire accepted batch or none. Startup reports staged/orphan/missing artifacts without deleting them. Keep the database and matching artifact root together. Before manual restoration, stop services and restore a SQLite backup plus its corresponding artifact root into a **new** directory; inspect integrity/FK checks before selecting it. Do not overwrite originals to rehearse restoration.
 
 Legacy QA and Corrections views remain available for the original deterministic payer-precedence demonstration. They use current generated QA evidence and original remediation snapshots rather than the new intake identity/version contract. See the [API compatibility reference](../API_REFERENCE.md).
+
+## Recurring clinic rehearsal
+
+1. Receive a synthetic canonical clinic CSV. Review valid/quarantined rows and the column mapping. Expand **Save this validated mapping as a revision**, enter name, mapping reviewer and mapping reason, and save. This does not accept rows.
+2. Enter the separate acceptance reviewer/reason and accept valid rows. Upload a later CSV with reordered known columns and a changed phone under the same source namespace.
+3. Select **Saved mapping revision → Apply saved mapping and reprocess**. Expand the comparison and inspect the named prior accepted delivery, raw/unique counts and old/new values with locators. Filter changed, missing and blocked-invalid separately.
+4. Accept explicitly. If another accepted delivery makes the comparison stale, **Refresh comparison**, review new previous values and retry. A missing required header blocks acceptance until a new mapping is reviewed; extra columns stay in the retained source.
+5. Download the evidence packet to inspect complete comparisons and revision IDs. Stop/resume the printed demo root; originals, revisions, work ownership and human history persist. Repeat delivery reuses the same accepted interpretation.

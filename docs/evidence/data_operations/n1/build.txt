@@ -1,0 +1,15 @@
+Publication copy: local paths normalized; exact original retained locally.
+
+
+> directory-review-console@0.1.0 build
+> tsc -b && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 84 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:   0.29 kB
+dist/assets/index-Dmy_KrtQ.css   24.60 kB │ gzip:   6.17 kB
+dist/assets/index-BZgIxpza.js   354.92 kB │ gzip: 104.36 kB
+✓ built in 1.00s
