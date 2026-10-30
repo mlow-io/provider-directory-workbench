@@ -97,6 +97,14 @@ git diff --check
 
 CI includes isolated browser tests and retained failure traces. Network calls remain separate from deterministic checks. `make validate-public` tests the compatibility sample downloader with isolated storage; it is not the durable adapter demonstration.
 
+## Operational SQL
+
+Run read-only questions against an existing durable intake database: follow-up cases, original receipt/row lineage, deterministic latest events, and differences between two selected accepted deliveries. The [query guide](docs/OPERATIONAL_SQL.md) declares result grain, parameters, synthetic outputs and limits.
+
+```bash
+PYTHONPATH=src python3 -m provider_directory_truth_layer.operations_sql --db .runtime/my-work/directory.sqlite3 follow-up --as-of 2026-10-30
+```
+
 ## Planned next phase
 
 The [near-term delivery plan](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) prioritizes the current core as a reviewed publication candidate, a small read-only SQL example pack, then saved source mappings and readable delivery comparisons. [Organization/network participation storage](docs/INTAKE_2_0_PROPOSAL.md#proposed-next-phase-recurring-organization-and-network-rosters) follows that checkpoint. These are planned deliverables, not newly implemented or published capabilities. Clinics/health systems remain organizations; payer-network participation is a separate source-asserted relationship.

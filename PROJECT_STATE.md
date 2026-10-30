@@ -4,6 +4,8 @@ Updated 2026-10-30. Local Intake Workbench 2.0; original G0–G5 baseline and th
 
 ## Implemented behavior
 
+- Read-only operational SQL and parameterized Python runner for follow-up, receipt lineage, latest events and two explicitly selected accepted-delivery comparisons; fixture coverage for nulls, absent evidence, fan-out, tied events and durable read-only checks.
+
 - String-safe legacy QA pipeline and preserved current-batch review/remediation compatibility views; source updates are separate from human verification.
 - Unified FastAPI application with durable CSV/XLSX/explicit JSON intake, original hashed artifacts, receipt and attempt history, parsing controls, mapping, full bounded validation, explicit acceptance/rejection and quarantine exports.
 - Native NPPES and CMS Doctors and Clinicians adapters, bounded public reads, raw response/error retention, dataset metadata, fifteen-minute retained-response replay and asserted unfetched links. Multiple locations/taxonomies and clinician/enrollment/group/address grain remain inspectable.
@@ -36,9 +38,9 @@ Names/verification inputs are locally asserted, no authentication or external pa
 
 ## Next scoped priority — planned
 
-The [next-phase proposal](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) prioritizes a reviewed publication candidate for the existing core and a tested operational SQL pack over real record-management questions, then N1 saved mappings/readable accepted-delivery comparisons. Organization/network participation storage and N2–N4 remain planned after that usable checkpoint. This is proposed work: no SQL example pack, catalog, participation model, schema migration or new API is implemented by this roadmap. Existing scope exclusions remain in place.
+The [next-phase proposal](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) now advances from the core and operational SQL to N1 saved mappings/readable accepted-delivery comparisons. Organization/network participation storage and N2–N4 remain planned after that usable checkpoint. This is proposed work: the catalog, participation model, mapping migration and recurring-import API remain planned. Existing scope exclusions remain in place.
 
-The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) define P0–P3. The implemented core is documented above; P1 operational SQL and N1–N4 recurring import/network features remain planned. The [2026-10-30 snapshot qualification](docs/evidence/data_operations/p0/README.md) passed 124 Python tests, pipeline validation, six frontend tests, build and 14 browser scenarios. Remote CI is recorded independently after publication.
+The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) define P0–P3. The implemented core is documented above; P1 operational SQL is implemented; N1–N4 recurring import/network features remain planned. The [2026-10-30 snapshot qualification](docs/evidence/data_operations/p0/README.md) passed 124 Python tests, pipeline validation, six frontend tests, build and 14 browser scenarios. Remote CI is recorded independently after publication.
 
 
 ## Contributor navigation
