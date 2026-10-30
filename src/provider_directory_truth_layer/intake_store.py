@@ -13,6 +13,7 @@ import os
 import re
 import sqlite3
 import uuid
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -115,14 +116,14 @@ class IntakeStore:
                 if tables:
                     backup = self.path.with_name(self.path.name + '.pre-intake-v1.bak')
                     if not backup.exists():
-                        with sqlite3.connect(backup) as target:
+                        with closing(sqlite3.connect(backup)) as target:
                             conn.backup(target)
                 conn.executescript('BEGIN IMMEDIATE;\n' + SCHEMA[0] + "\ninsert into schema_migration values (1, datetime('now'));\npragma user_version=1;\nCOMMIT;")
             if version < 2:
                 if version == 1:
                     backup = self.path.with_name(self.path.name + '.pre-intake-v2.bak')
                     if not backup.exists():
-                        with sqlite3.connect(backup) as target:
+                        with closing(sqlite3.connect(backup)) as target:
                             conn.backup(target)
                 conn.executescript("BEGIN IMMEDIATE; ALTER TABLE relationship ADD COLUMN location_index integer; INSERT INTO schema_migration VALUES (2, datetime('now')); PRAGMA user_version=2; COMMIT;")
             if version < 3:
@@ -130,7 +131,7 @@ class IntakeStore:
                 if version >= 1:
                     backup = self.path.with_name(self.path.name + '.pre-intake-v3.bak')
                     if not backup.exists():
-                        with sqlite3.connect(backup) as target:
+                        with closing(sqlite3.connect(backup)) as target:
                             conn.backup(target)
                 conn.executescript("BEGIN IMMEDIATE;\n" + MIGRATION_3 + "\nINSERT INTO schema_migration VALUES (3, datetime('now')); PRAGMA user_version=3; COMMIT;")
             if version < 4:
@@ -138,7 +139,7 @@ class IntakeStore:
                 if version >= 1:
                     backup = self.path.with_name(self.path.name + '.pre-intake-v4.bak')
                     if not backup.exists():
-                        with sqlite3.connect(backup) as target:
+                        with closing(sqlite3.connect(backup)) as target:
                             conn.backup(target)
                 conn.executescript("BEGIN IMMEDIATE;\n" + MIGRATION_4 + "\nINSERT INTO schema_migration VALUES (4, datetime('now')); PRAGMA user_version=4; COMMIT;")
             # A killed process can leave a processing marker, but no partial committed batch.
@@ -371,11 +372,12 @@ class IntakeStore:
                     comparison = compare(conn, receipt, rows, spec, baseline)
             else:
                 comparison = self.compare_delivery(receipt, rows)
+            scope_error = 'Review explicit network roster scope and source bindings before acceptance' if json.loads(receipt['metadata']).get('expected_roster_kind') == 'network' and spec.get('roster_kind') != 'network' else None
             preview = {'comparison': comparison, 'headers': headers, 'sheets': sheets, 'mapping': mapping, 'rows': rows,
                        'valid_count': sum(not r['problems'] for r in rows), 'quarantined_count': sum(bool(r['problems']) for r in rows),
                        'total': len(rows), 'mapping_revision_id': spec.get('mapping_revision_id'),
-                       'state': 'needs_mapping' if missing or header_error else 'preview_ready',
-                       'error': ('Map required fields: ' + ', '.join(missing)) if missing else header_error}
+                       'state': 'needs_mapping' if missing or header_error or scope_error else 'preview_ready',
+                       'error': ('Map required fields: ' + ', '.join(missing)) if missing else header_error or scope_error}
             with self.db() as conn:
                 prior = conn.execute("select id from attempt where fingerprint=? and state='committed' order by created_at limit 1", (fingerprint,)).fetchone()
                 if prior:

@@ -92,7 +92,7 @@ def compare(conn, receipt, rows, spec, baseline):
         fields = [{'field': field, 'old': old_values.get(field), 'new': new_values.get(field),
                    'old_present': field in old_values, 'new_present': field in new_values}
                   for field in sorted(set(old_values) | set(new_values))
-                  if old_values.get(field) != new_values.get(field) or (field in old_values) != (field in new_values)]
+                  if field != 'participation' and (old_values.get(field) != new_values.get(field) or (field in old_values) != (field in new_values))]
         return {'key': key, 'status': status, 'old': old, 'new': incoming, 'fields': fields,
                 'previous_locator': previous_locator, 'current_locator': current_locator,
                 'previous_receipt_id': baseline['receipt_id'] if baseline else None,

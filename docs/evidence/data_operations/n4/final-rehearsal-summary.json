@@ -1,0 +1,83 @@
+{
+  "schema_upgrade": "v2 -> v4",
+  "original_v2_rows_preserved": {
+    "artifact": 1,
+    "receipt": 1,
+    "attempt": 1,
+    "observation": 2,
+    "relationship": 0,
+    "work_case": 2,
+    "work_evidence": 2,
+    "work_event": 1
+  },
+  "old_input_artifact_hashes_preserved": 6,
+  "clinic_valid_quarantined": [
+    2,
+    1
+  ],
+  "network_baseline_valid": 3,
+  "changed_counts": {
+    "new": 1,
+    "changed": 1,
+    "blocked_invalid": 2,
+    "unresolved": 1,
+    "missing_from_this_delivery": 1
+  },
+  "changed_valid_quarantined": [
+    2,
+    3
+  ],
+  "restart_exact": true,
+  "restart_counts": {
+    "artifact": 4,
+    "receipt": 4,
+    "attempt": 9,
+    "observation": 9,
+    "relationship": 0,
+    "work_case": 10,
+    "work_evidence": 9,
+    "work_event": 2,
+    "mapping_revision": 2,
+    "organization": 2,
+    "network": 2,
+    "practice_location": 2,
+    "identity_binding": 5,
+    "participation_observation": 5,
+    "case_scope": 6,
+    "participation_review_evidence": 8
+  },
+  "repeat_state": "duplicate_delivery",
+  "workbook_scope": "Synthetic PINE",
+  "workbook_counts": {
+    "Cases": 3,
+    "Participations": 2,
+    "Review evidence": 4,
+    "Catalog": 5,
+    "Bindings": 4
+  },
+  "workbook_formula_count": 0,
+  "exports_preserved_state": true,
+  "header_drift_blocked_then_reviewed_new_revision": true,
+  "owner_initial_evidence_history_preserved": true,
+  "final_counts": {
+    "artifact": 5,
+    "receipt": 6,
+    "attempt": 15,
+    "observation": 11,
+    "relationship": 0,
+    "work_case": 10,
+    "work_evidence": 11,
+    "work_event": 2,
+    "mapping_revision": 3,
+    "organization": 2,
+    "network": 2,
+    "practice_location": 2,
+    "identity_binding": 5,
+    "participation_observation": 7,
+    "case_scope": 6,
+    "participation_review_evidence": 12
+  },
+  "final_artifact_input_hash_count": 10,
+  "integrity": "ok",
+  "foreign_key_violations": 0
+}

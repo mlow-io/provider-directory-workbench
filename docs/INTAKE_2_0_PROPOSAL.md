@@ -1,6 +1,6 @@
 # Provider Directory Intake Workbench: 2.0 Proposal
 
-Status: Accepted original 2.0 design specification, retained for traceability. Its implementation dispositions, measured limits and simplifications are recorded in DECISIONS.md, PROJECT_STATE.md and the evidence index. The [next-phase network roster plan](#proposed-next-phase-recurring-organization-and-network-rosters) below is proposed work, not an implemented capability or a reopening of the completed G0–G5 gates.
+Status: Accepted original 2.0 design specification, retained for traceability. Its implementation dispositions, measured limits and simplifications are recorded in DECISIONS.md, PROJECT_STATE.md and the evidence index. The network extension below records P0–P3 scope and acceptance criteria; current implementation/qualification and publication gates remain separate.
 
 Reviewed: 2026-10-23. Baseline: `main` at `cad9765`.
 
@@ -231,9 +231,9 @@ The shipped case study should describe implemented behavior and measured limits.
 
 ## Proposed next phase: recurring organization and network rosters
 
-Current disposition (2026-10-30): P1 operational SQL and N1 recurring clinic imports are implemented. [N1 qualification](evidence/data_operations/n1/README.md) records the passing local candidate and real operator evidence. N2–N4 remain in delivery; the requirements below remain the acceptance contract.
+Current disposition (2026-10-30): P1 operational SQL and N1–N4 recurring clinic/network intake, scoped review/export and guided demonstration are implemented locally. [Incremental qualification](evidence/data_operations/n3/README.md) and the [progress checkpoint](INTAKE_2_0_PROGRESS.md) distinguish passing gates, final qualification and publication state. The requirements below remain the contributor acceptance contract.
 
-Status: **N1 locally qualified; N2–N4 planned.** Requested after application checkpoint `2a68c885033240bdf2681342bca0fc6013fe60c7`. This section owns the next scoped plan; the original proposal and completed qualification above remain historical. Prioritize the publishable core and read-only SQL examples below, then reusable source mappings and a readable change preview, followed by explicit organization/network participation storage through the existing intake service.
+Status: **P1 and N1–N4 implemented locally; local qualification complete; public delivery gates tracked separately.** Requested after application checkpoint `2a68c885033240bdf2681342bca0fc6013fe60c7`. This section owns the next scoped plan; the original proposal and completed qualification above remain historical. Prioritize the publishable core and read-only SQL examples below, then reusable source mappings and a readable change preview, followed by explicit organization/network participation storage through the existing intake service.
 
 ### Near-term delivery priority: publishable core and transferable data work
 
@@ -291,9 +291,9 @@ For this phase, a **network** means a payer/provider participation network. Clin
 
 This scope follows the [HealthCare.gov network definition](https://www.healthcare.gov/glossary/network/). CMS's [NPI fact sheet](https://www.cms.gov/files/document/npi-fact-sheet.pdf) distinguishes NPI assignment from licensure/credentialing and Medicare enrollment. Our design consequently treats NPPES/CMS reference observations as identity/context evidence, never proof of participation in a supplied payer network.
 
-### Baseline to reuse and actual gaps
+### Historical planning gaps and current dispositions
 
-Current code already retains CSV/XLSX/JSON originals, interpretations, quarantine, explicit acceptance, source-scoped provider/location links, later evidence, accountable work and read-only exports. Do not rebuild those paths. Current `IntakeStore.receive` reuses a committed mapping only for identical source/profile/artifact bytes; it does not provide a reusable mapping for genuinely changed clinic files. `compare_delivery` supplies counts and row classifications, while the UI largely exposes the comparison as JSON. There is no organization/network catalog, network-aware participation observation model or network-specific identity in the durable work contract. CMS enrollment/group/address identifiers already retained by its adapter are not payer-network identities. The current comparator takes the latest observation per native key across source history and classifies parsed rows including quarantine; it is not a single accepted-delivery or prospective accepted-row diff. N1 must replace that comparison contract before presenting the stronger change preview.
+The original core retained heterogeneous intake, originals, durable work and bounded public-reference adapters. At planning time it reused mappings only for identical bytes and synthesized comparison counts across source history; reusable reviewed revisions, a single accepted baseline and explicit network identity were missing. N1–N3 now address those gaps through the existing intake service. CMS enrollment/group/address identifiers remain reference evidence, not payer-network identity. Current contracts live in the [data dictionary](DATA_DICTIONARY.md) and [API](API_REFERENCE.md); dated earlier findings remain in the [review](INTAKE_2_0_REVIEW.md).
 
 ### First synthetic demonstration
 
@@ -307,9 +307,9 @@ Use a clearly synthetic payer organization, two named networks (CEDAR and PINE),
 
 The network roster's supplied phone/status is an assertion by that source. A changed participation row creates review work; it does not automatically become an approved correction. Existing explicit phone proposal/submission/observed-verification behavior remains separate. Cross-source clinic-versus-network comparisons require reviewed network and location links before being added; joining by NPI alone is insufficient.
 
-### Proposed logical storage
+### Logical storage contract
 
-These are logical records to settle before choosing exact table names/DDL. Keep the current SQLite/artifact architecture; do not introduce a separate database service.
+These logical records are implemented in schema v4; exact tables/FKs and preservation rules are in the data dictionary. Keep the SQLite/artifact architecture; a database-server migration remains outside scope.
 
 | Record | Grain and proposed retained fields |
 | --- | --- |
@@ -348,7 +348,7 @@ Absence from a file, even a declared full snapshot, produces a reviewable missin
 | N3 — Recurring network review | Extend N1 baseline/validity rules to network scope; add network-aware QA work, filters and XLSX/JSON handoff. | Changed, new, missing and contradictory rows have correct evidence and distinct workflow states; later evidence never verifies work; stale comparisons conflict; selected exports contain only their stated relationship scope. |
 | N4 — Operator demonstration | Fresh offline multi-file journey, restart/repeat/error recovery, inspected screenshots/workbooks and a concise updated SOP/case study. | A first-time reviewer completes the journey without local path guessing; deterministic checks pass; original runtime data remains unchanged; demonstrated and proposed behavior stay separate. |
 
-Before N1 persistence, settle mapping-revision and comparison-baseline storage and preservation. Before N2, review exact foreign keys, uniqueness rules, binding-history representation and new case identities. Use a numbered additive migration with SQLite backup/rollback/integrity/FK tests; current schema v2 and old case identifiers remain untouched during this planning task. Do not guess new network bindings for historic source rows or rebuild old cases. Rehearse migration only against fixture-owned copies before adopting any working database.
+Before N1 persistence, settle mapping-revision and comparison-baseline storage and preservation. Before N2, review exact foreign keys, uniqueness rules, binding-history representation and new case identities. Use a numbered additive migration with SQLite backup/rollback/integrity/FK tests; migrations 3–4 preserve older case identifiers and retained source/history; no historic membership is inferred. Do not guess new network bindings for historic source rows or rebuild old cases. Rehearse migration only against fixture-owned copies before adopting any working database.
 
 Run `make validate`, `pytest -q`, frontend tests/build and desktop/phone browser checks as applicable, using invocation-owned database/artifact roots and preserving existing compatibility coverage. Add fixtures for leading-zero IDs, literal `NA`/nulls, invalid dates, duplicate keys, source/network collisions, multi-location providers, structural drift, repeated/reordered deliveries, interrupted acceptance and full evidence beyond UI sample bounds. Inspect browser-downloaded workbooks, prove exports do not mutate state, and rehearse real stop/resume. Performance claims require new measurements on representative fixtures.
 

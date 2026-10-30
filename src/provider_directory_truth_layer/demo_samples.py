@@ -20,7 +20,30 @@ SAMPLES = [
     {'id': 'clinic-changed', 'label': 'Synthetic changed delivery', 'description': 'Reordered sites and a changed NORTH phone; later evidence does not verify work.', 'filename': 'synthetic-changed.csv', 'profile': 'flat'},
     {'id': 'nppes', 'label': 'Synthetic NPPES response', 'description': 'Offline saved response with two practice addresses; not a live lookup.', 'filename': 'synthetic-nppes.json', 'profile': 'nppes'},
     {'id': 'cms', 'label': 'Synthetic CMS clinician response', 'description': 'Offline enrollment/group/address example; not a live lookup.', 'filename': 'synthetic-cms.json', 'profile': 'cms'},
+    {'id': 'network-baseline', 'label': 'Synthetic network baseline CSV', 'description': 'Prepare explicit synthetic organization, network, and location catalog records; review source bindings, save a mapping, then accept this three-row roster.', 'filename': 'synthetic-network-baseline.csv', 'profile': 'flat'},
+    {'id': 'network-changed', 'label': 'Synthetic changed network CSV', 'description': 'Apply the reviewed network mapping explicitly to a changed delivery; inspect new, changed, blocked, unresolved, and missing rows before acceptance.', 'filename': 'synthetic-network-changed.csv', 'profile': 'flat'},
+    {'id': 'network-header-drift', 'label': 'Synthetic network header drift CSV', 'description': 'The required phone header is renamed. Review and save a new mapping revision explicitly before any acceptance.', 'filename': 'synthetic-network-header-drift.csv', 'profile': 'flat'},
 ]
+
+NETWORK_HEADERS = ['record_id','npi','provider_name','address','city','state','zip','phone','location_id',
+                   'network_code','network_label','organization_code','organization_label',
+                   'participation_status','effective_date','end_date']
+
+
+def _network_row(native_id, network, location, phone, status='listed'):
+    address, postal = ('1 Example Street', '02108') if location == 'NORTH' else ('2 Example Street', '02109')
+    return {'record_id': native_id, 'npi': '1234567890', 'provider_name': 'Synthetic Avery Example',
+            'address': address, 'city': 'Boston', 'state': 'MA', 'zip': postal, 'phone': phone,
+            'location_id': location, 'network_code': network, 'network_label': 'Synthetic ' + network,
+            'organization_code': 'CLINIC', 'organization_label': 'Synthetic Clinic',
+            'participation_status': status, 'effective_date': '2026-01-01', 'end_date': ''}
+
+
+def _write_network_csv(path, rows, headers):
+    with path.open('w', newline='', encoding='utf-8') as stream:
+        writer = csv.DictWriter(stream, fieldnames=headers)
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def generate(root: Path):
@@ -53,6 +76,27 @@ def generate(root: Path):
     cms={'results':[{'npi':'1234567890','ind_enrl_id':'ENROLL-SYNTHETIC','org_pac_id':'GROUP-SYNTHETIC','adrs_id':'ADDRESS-SYNTHETIC','provider_first_name':'SYNTHETIC','provider_last_name':'MEDICARE EXAMPLE','adr_ln_1':'1 Example Street','citytown':'Boston','state':'MA','zip_code':'02108','telephone_number':'6175550100'}]}
     (root/'synthetic-nppes.json').write_text(json.dumps(nppes,indent=2))
     (root/'synthetic-cms.json').write_text(json.dumps(cms,indent=2))
+    network_baseline = [
+        _network_row('PART-001', 'CEDAR', 'NORTH', '6175550100'),
+        _network_row('PART-002', 'CEDAR', 'SOUTH', '6175550101'),
+        _network_row('PART-003', 'PINE', 'NORTH', '6175550100'),
+    ]
+    network_changed = [
+        {**_network_row('PART-004', 'PINE', 'SOUTH', '6175550101'), 'delivery_note': 'Synthetic new participation'},
+        {**_network_row('PART-003', 'PINE', 'NORTH', '6175550100'), 'delivery_note': 'Synthetic duplicate conflict'},
+        {**_network_row('PART-001', 'CEDAR', 'NORTH', '6175550177'), 'delivery_note': 'Synthetic changed phone'},
+        {**_network_row('PART-U', 'UNKNOWN', 'NORTH', '6175550100'), 'delivery_note': 'Synthetic unresolved network'},
+        {**_network_row('PART-003', 'PINE', 'NORTH', '6175550100', 'not_listed'), 'delivery_note': 'Synthetic duplicate conflict'},
+    ]
+    changed_headers = ['network_code', 'location_id', 'record_id', 'npi', 'phone', 'provider_name',
+                       'organization_code', 'network_label', 'organization_label', 'participation_status',
+                       'effective_date', 'end_date', 'address', 'city', 'state', 'zip', 'delivery_note']
+    _write_network_csv(root/'synthetic-network-baseline.csv', network_baseline, NETWORK_HEADERS)
+    _write_network_csv(root/'synthetic-network-changed.csv', network_changed, changed_headers)
+    _write_network_csv(root/'synthetic-network-header-drift.csv',
+                       [{('Published phone' if key == 'phone' else key): value for key, value in item.items()}
+                        for item in network_changed],
+                       [('Published phone' if key == 'phone' else key) for key in changed_headers])
     return root
 
 

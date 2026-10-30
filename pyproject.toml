@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "provider-directory-truth-layer"
 version = "2.0.0"
-description = "Provider directory QA and exception-reporting pipeline."
+description = "Local provider directory intake, evidence review and scoped data operations."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

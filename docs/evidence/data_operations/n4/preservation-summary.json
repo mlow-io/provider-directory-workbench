@@ -1,0 +1,7 @@
+{
+  "original_file_count": 7449,
+  "unchanged_in_place": 7411,
+  "generated_browser_outputs_preserved_in_copy": 38,
+  "failed_preservation": [],
+  "policy": "Original working runtime and legacy outputs retained; prior generated browser output bytes retained separately before reruns."
+}

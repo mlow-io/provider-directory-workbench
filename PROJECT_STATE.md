@@ -1,60 +1,33 @@
 # Project state
 
-Updated 2026-10-30. Local Intake Workbench 2.0; original G0–G5 baseline and the focused employer-readiness follow-up passed locally. Publication status and fresh snapshot qualification are recorded separately from these historical local results.
+Updated 2026-10-30. P0–P3 application work is implemented locally through the guided multi-file demonstration. Final clean-candidate qualification/publication state is tracked in the [progress checkpoint](docs/INTAKE_2_0_PROGRESS.md); no release or deployment is claimed.
 
-## Implemented behavior
+## Implemented
 
-- Scoped network comparison QA, exact work filters and read-only all/case/network JSON/XLSX, preserving source status/dates and human review separately. Known invalid/missing source rows are comparison evidence, never accepted membership.
+- Durable CSV/XLSX/explicit JSON intake, hashed originals, receipts/attempts, string-safe normalization, full bounded validation, quarantine, explicit acceptance/rejection and complete evidence packets.
+- Immutable reviewed mapping revisions reusable across changed bytes; required-header drift review, unknown-column retention, one accepted source/dataset/network baseline, valid-only field comparisons, duplicate-key quarantine and stale-baseline acceptance checks.
+- Distinct organization, payer network, provider, practice location and source-asserted participation identities. Opaque catalog IDs, typed immutable binding revisions and interpretation snapshots prevent name/NPI inference or cross-network collisions. Source status/effective/end/as-of dates and declared completeness retain their own meanings.
+- Durable network QA for accepted assertions, missing baseline keys and known quarantined identities. Unknown bindings remain receipt quarantine. Human ownership/follow-up/status/version/history and immutable initial evidence survive later deliveries, reinterpretation and restart; no automatic merge, termination or verification occurs.
+- Parameterized read-only SQLite questions for follow-up, original/row lineage (including comparison work), deterministic latest events and two explicitly selected accepted deliveries with full network identity/scope checks.
+- Network/organization/location filters, responsive case review and read-only all/case/network XLSX/JSON from one pinned SQLite snapshot. Scoped operational catalog/binding/participation rows remain separate from complete shared receipt context; literal-text/chunked payload safety preserves identifiers, nulls, dates and long originals.
+- Demo-only explicit synthetic catalog preparation and guided clinic/network sample paths. Saving/loading/applying never silently accepts or verifies. Header-error recovery saves a new revision; repeat/restart retains work. Ordinary startup does not seed data; original compatibility QA/correction views remain available.
+- Additive transactional schema migrations 1–4, versioned SQLite backups, future-schema rejection, integrity/FK checks, artifact recovery reporting and invocation-owned validation/browser/demo storage. A real populated v2→v4 migration/restart rehearsal preserved prior rows/events/input/artifact hashes.
+- Native NPPES/CMS bounded reference adapters, retained raw responses/errors, source metadata/replay and explicit location relationships. Historical live checks remain dated reference observations, not certified truth.
 
-- Explicit organization/network/practice-location catalog, immutable reviewed source bindings and scoped participation observations, with unknown identity/date conflicts quarantined. Schema v4 preserves previous work.
+## Qualification
 
-- Reviewed immutable recurring clinic mapping revisions, required-header drift handling, one displayed accepted baseline, valid-only old/new field comparisons and stale-baseline acceptance checks. Schema v4 preserves prior records and interpretation settings.
+The [final qualification](docs/evidence/data_operations/n4/README.md) passed **168 Python tests**, isolated pipeline 12 records/11 findings/six discrepancies, **14 frontend tests**, production build and **22 desktop/phone-sized Chromium scenarios**. Actual guided network acceptance/review/download/header-recovery behavior and screenshots were inspected. A separate real v2→v4 launcher migration/restart/repeat/export rehearsal preserved prior rows, source bytes, initial evidence and human history; all 7,449 pre-existing files were preserved in place or prior-output copies. One upstream TestClient deprecation warning remains.
 
-- Read-only operational SQL and parameterized Python runner for follow-up, receipt lineage, latest events and two explicitly selected accepted-delivery comparisons; fixture coverage for nulls, absent evidence, fan-out, tied events and durable read-only checks.
+Earlier [core](docs/evidence/data_operations/p0/README.md), [SQL](docs/evidence/data_operations/p1/README.md), [N1](docs/evidence/data_operations/n1/README.md), [N2](docs/evidence/data_operations/n2/README.md) and [N3](docs/evidence/data_operations/n3/README.md) receipts retain incremental dated evidence. Remote CI and default-branch adoption are separate gates in the progress checkpoint.
 
-- String-safe legacy QA pipeline and preserved current-batch review/remediation compatibility views; source updates are separate from human verification.
-- Unified FastAPI application with durable CSV/XLSX/explicit JSON intake, original hashed artifacts, receipt and attempt history, parsing controls, mapping, full bounded validation, explicit acceptance/rejection and quarantine exports.
-- Native NPPES and CMS Doctors and Clinicians adapters, bounded public reads, raw response/error retention, dataset metadata, fifteen-minute retained-response replay and asserted unfetched links. Multiple locations/taxonomies and clinician/enrollment/group/address grain remain inspectable.
-- Stable source/provider/location/native-key work with initial snapshots and later observations; explicit audited practice-location crosswalks; ownership, needs information, follow-up and explained risk; stale-preview/case conflict checks and atomic event/projection updates.
-- Distinct QA disposition and correction approval/simulated submission/observed verification/reopen. Current operational correction scope is explicit location phone requests, with legacy configured payer-field comparison separately available.
-- Schema v4 numbered transactional migration, backups and future-schema rejection; SQLite foreign keys/WAL/busy timeout; retained artifact recovery report; invocation-owned validation/browser/demo storage.
-- Intake/Work queue/Sources navigation, desktop/phone layouts, keyboard controls, loading/empty/failure/retry states, retained conflict drafts, full evidence packets, and one offline demo launcher.
-- Explicit offline synthetic sample picker through normal intake, editable suggested workbook columns and operator acceptance; ordinary service startup keeps sample loading disabled. Repeated fixture bytes stay stable across restarts.
-- Read-only all-durable-work/selected-case XLSX handoff with current ownership/follow-up, scoped evidence/receipt/row locators, complete history and chunked original payloads from a consistent SQLite snapshot. All-work export explicitly ignores queue filters.
+## Material limits
 
-## Qualification and current checkpoint
+This is a single-user local application with bounded worker-thread requests and persisted recovery, not a persistent job queue. Reviewer/verification identities are local assertions. Network review is QA; operational phone proposal/simulated submission/observed verification remains a separate clinic-location correction workflow. Clinic-versus-network reconciliation is not inferred by NPI or equal labels.
 
-The 2026-10-23 baseline passed 103 Python tests, isolated pipeline validation, three frontend tests, TypeScript/Vite 6.4.5 build and 12 browser scenarios across desktop/phone viewports in a clean local checkout. npm audit reported zero known vulnerabilities. Exact commands and fresh-checkout evidence are recorded in [the execution checkpoint](docs/INTAKE_2_0_PROGRESS.md) and [evidence index](docs/evidence/intake_2_0/README.md). Original legacy runtime data was backed up and preserved before implementation.
+Artifact limit is 10 MiB and tabular limit 20,000 rows. Interactive evidence/comparison samples stop at 50 and queue rendering at 200 matching cases; full exports read complete selected durable scope. Earlier 20,000-row CSV timing remains historical and does not establish equivalent XLSX, concurrent-writer, memory or production performance. Native public JSON reference comparisons retain their earlier semantics.
 
-The 2026-10-26 follow-up passed **114 Python tests**, isolated pipeline validation (12 records/11 findings/six discrepancies), **six frontend tests**, production build and **14 desktop/phone browser scenarios**. Real fresh offline start/stop/resume retained exact cases/events/receipts/observations and input/artifact hashes; all 137 prior runtime files remained unchanged. Selected UI/screenshots and downloaded XLSX contents were inspected. See the [follow-up evidence](docs/evidence/employer_readiness/README.md).
+Authentication, hosting, multitenancy, bulk mutation, payer writeback, full entity resolution, automatic termination, national ingestion, FHIR, products/benefits/rates, clinical/credential certification and KPI integration remain outside scope. A source assertion never establishes a patient's benefits or verified participation.
 
-Subsequent regression hardening passed **124 Python tests**, pipeline validation, six frontend tests, production build and 14 browser scenarios. Later native evidence/relationship exports now retain the selected case scope; launcher port/service failures return nonzero and clean up sibling/descendant services. Real failure/restart checks preserved exact work and originals; all 272 pre-existing runtime files remained unchanged. See the [hardening evidence](docs/evidence/employer_readiness/hardening/README.md).
+## Contributor entry
 
-Integrated bounded live NPPES and CMS reads succeeded on 2026-10-23, one record each, both explicitly truncated. Public data is not certified truth. Synthetic offline fixtures are separate from retained live observations.
-
-## Limits and trade-offs
-
-The service uses bounded worker-thread requests and persisted attempts, not a separate persistent job queue. Initial operational comparison is location phone listed-versus-requested; there is no generalized reconciliation engine. Legacy QA remains a generated current-batch compatibility view; old originals are never fabricated. New intake work is durable.
-
-Clinic file comparison now pins one accepted delivery and handles valid, invalid known-key and unresolved rows separately. Public native JSON retains its earlier reference comparison behavior; organization/network expansion remains planned.
-
-Artifact cap is 10 MiB and tabular cap 20,000 rows. Interactive samples cap at 50 observations; queue renders 200 matches over loaded summaries. A measured 20,000-row synthetic CSV took 1.14 s preview and 9.86 s acceptance with roughly 312 MiB process RSS; XLSX/concurrent-writer equivalence is not established. Public reads are bounded pages and may fail or quarantine incomplete records.
-
-Names/verification inputs are locally asserted, no authentication or external payer writeback exists. No automatic identity merge/removal, national replication, KPI integration, multitenancy, deployment, bulk case operations, clinical/credential certification or FHIR is implemented.
-
-## Next scoped priority — planned
-
-The [next-phase proposal](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) now advances from the core and operational SQL to N1 saved mappings/readable accepted-delivery comparisons. Organization/network participation storage and N2–N4 remain planned after that usable checkpoint. This is proposed work: the catalog, participation model, mapping migration and recurring-import API remain planned. Existing scope exclusions remain in place.
-
-The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) define P0–P3. The implemented core is documented above; P1 operational SQL is implemented; N1 recurring clinic import is implemented; N2 storage is implemented; N3–N4 review/export and demonstration remain planned. The [2026-10-30 snapshot qualification](docs/evidence/data_operations/p0/README.md) passed 124 Python tests, pipeline validation, six frontend tests, build and 14 browser scenarios. Remote CI is recorded independently after publication.
-
-
-## Contributor navigation
-
-Read [README](README.md), [AGENTS](AGENTS.md), [execution checkpoint](docs/INTAKE_2_0_PROGRESS.md), [architecture decisions](docs/DECISIONS.md), and [demo procedure](docs/operations_governance/sop_provider_remediation.md). Historical handoff/review findings remain dated evidence; the current dispositions and checks are linked rather than rewriting reproductions.
-
-The [recurring-clinic qualification](docs/evidence/data_operations/n1/README.md) passed 141 Python tests, pipeline validation, eight frontend tests, build and 16 browser scenarios, plus actual restart/repeat/packet evidence. N2 storage is implemented; N3 scoped review/export is implemented; N4 demonstration remains planned.
-
-[N2 storage qualification](docs/evidence/data_operations/n2/README.md) records the passing explicit-binding/three-participation browser journey and migration preservation. N3–N4 remain the next scoped delivery.
-
-[N3 scoped review qualification](docs/evidence/data_operations/n3/README.md) records passing missing/blocked evidence, exact network filters, read-only handoffs and full-empty snapshot semantics. The final guided multi-file demonstration is the next gate.
+Start with [README](README.md), [AGENTS](AGENTS.md), [workflow](docs/OPERATIONS_WORKFLOW.md), [data dictionary](docs/DATA_DICTIONARY.md), [API](docs/API_REFERENCE.md), [decisions](docs/DECISIONS.md), the [SQL guide](docs/OPERATIONAL_SQL.md) and [operator SOP](docs/operations_governance/sop_provider_remediation.md). The [roadmap](docs/INTAKE_2_0_PROPOSAL.md) retains scope and acceptance criteria; delivery gates are recorded separately from implementation.

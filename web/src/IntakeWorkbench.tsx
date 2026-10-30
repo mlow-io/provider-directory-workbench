@@ -256,6 +256,7 @@ function IntakeInbox() {
     [completeness, setCompleteness] = useState("unknown"),
     [asOf, setAsOf] = useState("");
   const [error, setError] = useState(""),
+    [networkSetupNotice, setNetworkSetupNotice] = useState(""),
     [busy, setBusy] = useState(false),
     [file, setFile] = useState<File | null>(null);
   const [lookup, setLookup] = useState({
@@ -289,6 +290,18 @@ function IntakeInbox() {
       document.getElementById("intake-receipt-detail")?.scrollIntoView?.({ block: "start" });
   }, [selected]);
   const selectedSample = samples.data?.items?.find((sample) => sample.id === sampleId);
+  const prepareNetwork = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const result = await request<{notice:string}>("/demo/network-setup", {});
+      setNetworkSetupNotice(result.notice);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <>
       {(samples.data?.items?.length ?? 0) > 0 && (
@@ -320,9 +333,16 @@ function IntakeInbox() {
             </button>
           </form>
           <p className="iw-muted">{selectedSample?.description}</p>
+          <div className="iw-suggestion">
+            <button type="button" disabled={busy} onClick={() => void prepareNetwork()}>
+              Prepare synthetic network catalog
+            </button>
+            <p className="iw-muted">For the network samples, prepare CEDAR/PINE and NORTH/SOUTH source-code bindings first. This only creates reviewed synthetic catalog records. Loading and accepting deliveries remain separate steps.</p>
+            {networkSetupNotice && <p className="iw-notice" role="status">{networkSetupNotice}</p>}
+          </div>
           <p className="iw-muted">
             Next: review the columns, inspect quarantine, then explicitly accept valid
-            rows. All samples use source <strong>synthetic-demo</strong>. Loading a
+            rows. Clinic samples use <strong>synthetic-demo</strong>; network samples use <strong>synthetic-network-demo</strong>. Loading a
             sample never accepts or verifies it.
           </p>
         </section>
@@ -657,6 +677,9 @@ function ReceiptDetail({
     && Boolean(preview?.comparison?.baseline);
   const suggestedMapping = detail.metadata?.suggested_mapping;
   const hasSuggestedMapping = suggestedMapping !== null && typeof suggestedMapping === "object";
+  const suggestedNetworkSettings = detail.metadata?.suggested_network_settings;
+  const hasSuggestedNetworkSettings = suggestedNetworkSettings !== null && typeof suggestedNetworkSettings === "object";
+  const isNetworkSample = String(detail.metadata?.demo_sample ?? "").startsWith("network-");
   const isReferenceSample = ["nppes", "cms"].includes(String(detail.metadata?.demo_sample));
   return (
     <>
@@ -671,7 +694,13 @@ function ReceiptDetail({
         <aside className="iw-notice" aria-label="Synthetic sample next step">
           <strong>Synthetic example — no real clinicians or payer updates.</strong>
           <p>
-            {["committed", "duplicate_delivery"].includes(detail.state ?? "")
+            {isNetworkSample
+              ? ["committed", "duplicate_delivery"].includes(detail.state ?? "")
+                ? "Next: inspect the source-listed network scope and comparison QA work. Filter by network and location, assign follow-up and download scoped evidence. Later rows never verify human work or terminate participation."
+                : String(detail.metadata?.demo_notice ?? (hasSuggestedNetworkSettings
+                  ? "Review the suggested network bindings, save mapping and reprocess, then save a named mapping revision before explicit acceptance."
+                  : "Prepare the synthetic network catalog above, then load this sample again to review its source bindings. No catalog is created by loading a file."))
+              : ["committed", "duplicate_delivery"].includes(detail.state ?? "")
               ? isReferenceSample
                 ? "Next: inspect the native source observations below. A provider identity does not select a practice location; any location relationship needs an explicit evidence-supported choice. This saved-response fixture is synthetic, not a live public lookup or human verification."
                 : "Next: open a linked case below. Compare NORTH and SOUTH, assign an owner, and record triage, approval, simulated submission and an observed result. Download the case XLSX to hand off the evidence and decisions."
@@ -734,6 +763,15 @@ function ReceiptDetail({
             {preview.valid_count ?? 0} valid · {preview.quarantined_count ?? 0}{" "}
             quarantined · {preview.total ?? 0} total
           </p>
+          {hasSuggestedNetworkSettings && <div className="iw-suggestion">
+            <button type="button" disabled={busy} onClick={() => {
+              const settings = suggestedNetworkSettings as {bindings?:RosterBindings;fixed_network_binding_id?:string|null};
+              setRosterKind("network");
+              setRosterBindings(settings.bindings ?? emptyRosterBindings());
+              setFixedNetworkBindingId(settings.fixed_network_binding_id ?? "");
+            }}>Use suggested network scope</button>
+            <p className="iw-muted">Fills this form only. Open Column mapping and parsing to review exact bindings, then save mapping and reprocess. Saving a named revision and accepting valid rows are separate decisions.</p>
+          </div>}
           <details
             open={["needs_mapping", "failed", "interrupted"].includes(
               preview.state ?? "",

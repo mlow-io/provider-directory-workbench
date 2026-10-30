@@ -76,6 +76,13 @@ def create_workbench(path: Path | None = None, root: Path | None = None, *, demo
         from .demo_samples import SAMPLES
         return {'items': SAMPLES if demo_enabled else []}
 
+    @app.post('/api/demo/network-setup')
+    def prepare_network_demo():
+        if not demo_enabled:
+            raise HTTPException(404,'Synthetic network setup is disabled; use the offline demo launcher')
+        from .demo_network import prepare
+        return prepare(store)
+
     @app.post('/api/demo/samples/{sample_id}')
     def load_sample(sample_id: str):
         from .demo_samples import SAMPLES, WORKBOOK_MAPPING, sample_payloads
@@ -87,7 +94,17 @@ def create_workbench(path: Path | None = None, root: Path | None = None, *, demo
         metadata = {'demo_sample': sample_id, 'notice': 'SYNTHETIC offline example; no real clinicians or payer updates'}
         if sample_id == 'clinic-workbook':
             metadata['suggested_mapping'] = WORKBOOK_MAPPING
-        result = store.receive(sample_payloads()[sample_id], sample['filename'], 'synthetic-demo', 'synthetic', sample['profile'], metadata)
+        source='synthetic-demo'
+        if sample_id.startswith('network-'):
+            from .demo_network import SOURCE,SCOPE,prepared_settings
+            source=SOURCE
+            metadata.update(scope=SCOPE,completeness='bounded',expected_roster_kind='network',as_of='2026-10-01' if sample_id=='network-baseline' else '2026-10-15')
+            suggested=prepared_settings(store)
+            if suggested:
+                metadata['suggested_network_settings']=suggested
+            else:
+                metadata['demo_notice']='Prepare the synthetic network catalog explicitly, then load this sample again to review its suggested scope.'
+        result = store.receive(sample_payloads()[sample_id], sample['filename'], source, 'synthetic', sample['profile'], metadata)
         if sample_id == 'clinic-workbook' and result['state'] == 'failed':
             result = store.mapping(result['id'], {'header_row': 2, 'sheet': 'Clinic roster'})
         return bounded(result)

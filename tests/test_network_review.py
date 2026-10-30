@@ -2,6 +2,7 @@
 
 import csv
 import hashlib
+import gc
 import io
 import json
 
@@ -179,6 +180,7 @@ def test_scoped_work_and_exports_exclude_unrelated_network_rows(store):
     client = TestClient(create_workbench(store.path, store.root))
     artifact = store.artifacts / first["artifact_sha"]
     before = (_hash(store.path), _hash(artifact))
+    gc.collect()  # Prior request connections must already be closed; export cannot checkpoint a late writer.
     response = client.get("/api/work-export.json", params={"network_id": cedar_id})
     assert response.status_code == 200
     snapshot = response.json()
@@ -322,3 +324,26 @@ def test_identical_bytes_other_dataset_do_not_reuse_mapping_baseline_or_export_c
     receipt_ids = {receipt["id"] for receipt in selected.json()["receipts"]}
     assert first["id"] in receipt_ids
     assert other["id"] not in receipt_ids
+
+
+def test_selected_case_retains_catalog_and_bindings_for_later_source_organization(store):
+    catalogs, bindings=setup(store)
+    initial=initial_snapshot(store,bindings)
+    selected=next(case for case in initial['linked_cases'] if json.loads(case['evidence'])['normalized'].get('network_code')=='CEDAR' and json.loads(case['evidence'])['normalized'].get('location_id')=='NORTH')
+    original=store.case(selected['id'])
+    other=store.create_catalog('organizations',{'label':'Another synthetic clinic','kind':'clinic','actor':'op','reason':'Explicit separate organization'})
+    replacement=store.bind_source({'source':SOURCE,'kind':'organization','source_key':'CLINIC','target_id':other['id'],
+        'expected_binding_id':bindings['organization']['CLINIC'],'actor':'op','reason':'Source now asserts another organization'})
+    updated={kind:dict(values) for kind,values in bindings.items()}
+    updated['organization']['CLINIC']=replacement['id']
+    incoming=receive(store,[row(phone='5550100008'),row('CEDAR','SOUTH'),row('PINE','NORTH')])
+    accept(store,mapped(store,incoming,updated))
+    current=store.case(selected['id'])
+    assert current['evidence']==original['evidence'] and current['scope']==original['scope']
+    assert current['history']==original['history'] and current['status']==original['status']
+    client=TestClient(create_workbench(store.path,store.root))
+    exported=client.get('/api/work-export.json',params={'case_id':selected['id']}).json()
+    referenced={item['organization_id'] for item in exported['participations']}
+    assert referenced=={catalogs['CLINIC']['id'],other['id']}
+    assert referenced <= {item['id'] for item in exported['catalog']['organizations']}
+    assert referenced <= {item['target_id'] for item in exported['bindings'] if item['kind']=='organization'}

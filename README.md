@@ -24,13 +24,26 @@ make workbench
 
 Open **http://127.0.0.1:5173/?view=intake**. Choose **Synthetic clinic workbook → Load synthetic sample**. Header row 2 is selected; **Use suggested columns** fills an editable form. Review it, save mapping, inspect **2 valid / 1 quarantined**, then enter a reviewer/reason to accept. One clinician has separate NORTH and SOUTH phone requests.
 
-The launcher explicitly enables `PDTL_DEMO=1`, prints its fresh `.runtime/employer-demo-*` directory, and creates synthetic inputs in its `inputs/` folder. The picker also offers a canonical CSV, changed delivery and saved NPPES/CMS examples. All picker receipts use `synthetic-demo`; normal uploads keep their chosen namespace/designation. Sample loading never accepts or verifies data. Direct service startup leaves sample loading disabled unless explicitly enabled. No account or network is needed after dependencies are installed. The launcher fails clearly if a required port is occupied or either service exits unexpectedly; it stops its own service groups and retains storage. Ctrl-C stops both services and retains the demo. Resume it with:
+The launcher explicitly enables `PDTL_DEMO=1`, prints its fresh `.runtime/employer-demo-*` directory, and creates synthetic inputs in its `inputs/` folder. The picker also offers canonical/changed clinic files, saved NPPES/CMS examples and a three-file network sequence. Clinic/reference picker receipts use `synthetic-demo`; network samples use the separate `synthetic-network-demo` namespace/dataset. Normal uploads keep their chosen namespace/designation. Sample loading never accepts or verifies data. Direct service startup leaves sample loading disabled unless explicitly enabled. No account or network is needed after dependencies are installed. The launcher fails clearly if a required port is occupied or either service exits unexpectedly; it stops its own service groups and retains storage. Ctrl-C stops both services and retains the demo. Resume it with:
 
 ```bash
 PYTHONPATH=src python3 scripts/demo.py --root .runtime/employer-demo-REPLACE_ME
 ```
 
 Follow the [five-minute demonstration](docs/operations_governance/sop_provider_remediation.md). See the [case study](docs/CASE_STUDY.md) and [qualification evidence](docs/evidence/intake_2_0/README.md).
+
+## Guided multi-file network demo
+
+The clinic quick start remains the simplest first path. For the full recurring network journey, stay in the same offline workbench:
+
+1. Click **Prepare synthetic network catalog**. This explicitly prepares one synthetic payer, CEDAR/PINE, one clinic and NORTH/SOUTH code bindings; it accepts no records.
+2. Choose **Synthetic network baseline CSV** and load it. Click **Use suggested network scope**, open column mapping, review the bindings and **Save mapping and reprocess**.
+3. Save a named mapping revision with mapping reviewer/reason, apply it, then enter the separate acceptance reviewer/reason and accept **3 valid** source assertions.
+4. Load **Synthetic changed network CSV**, apply that saved revision, and inspect one changed/one new, two blocked duplicate rows, one unresolved row and one missing baseline record. Accept **2 valid / 3 quarantined**; missing never means terminated.
+5. Filter Work by a network/location, assign follow-up and download selected-network or selected-case XLSX/JSON. All-work XLSX continues to ignore queue filters.
+6. Load **Synthetic network header drift CSV**. Applying the original revision blocks the missing `phone` header. Review `phone → Published phone`, reprocess and save a new revision before accepting. The original and earlier revision stay intact.
+
+The [complete SOP](docs/operations_governance/sop_provider_remediation.md#guided-multi-file-network-demonstration) includes clinic workbook review, restart/repeat and expected counts. [Final demonstration evidence](docs/evidence/data_operations/n4/README.md) records inspected screenshots/workbooks and the real migration/recovery rehearsal. Source-listed participation/status/dates are assertions; no payer updates or patient-benefit decisions occur.
 
 ## Operator workflow
 
@@ -60,7 +73,7 @@ PDTL_ROOT=.runtime/my-work PYTHONPATH=src python3 -m provider_directory_truth_la
 
 Service startup never runs the pipeline or deletes data. `make demo` explicitly refreshes only the legacy synthetic projection in its demo root. `make validate` creates an invocation-owned fixture root. `make clean` deletes nothing. Playwright creates its own temporary database and uses known ports 8100/5180 without server reuse.
 
-Schema migrations 1–4 are additive, transactional, and reject unknown future versions. Legacy upgrade backups are created with SQLite's backup API. Existing source/runtime originals are not automatically migrated. New intake event rows have database update/delete guards and expected-version checks. Per-connection foreign keys, WAL, and a 10-second busy timeout are configured. Direct database editing is outside the application trust boundary.
+Schema migrations 1–4 are additive, transactional, and reject unknown future versions. Existing databases receive versioned SQLite backups before migration; the original artifact root remains required. Legacy upgrade backups are created with SQLite's backup API. Existing source/runtime originals are not automatically migrated. New intake event rows have database update/delete guards and expected-version checks. Per-connection foreign keys, WAL, and a 10-second busy timeout are configured. Direct database editing is outside the application trust boundary.
 
 On restart, unfinished processing attempts become `interrupted`; reprocess the retained receipt. `artifact-recovery.json` reports staged, unregistered, or missing artifacts without deleting or accepting them. Accepted observations and linked work commit together. Export files are projections, not the database of record.
 
@@ -80,6 +93,8 @@ Artifact limit: 10 MiB; tabular row limit: 20,000. Interactive evidence samples 
 On the qualification machine, a synthetic 20,000-row CSV preview took 1.14 seconds and acceptance 9.86 seconds at about 312 MiB peak process RSS. This does not establish equivalent XLSX or multi-writer performance. Reproduce with `PYTHONPATH=src python3 scripts/benchmark_intake.py 20000`.
 
 ## Checks
+
+The [final data-operations candidate](docs/evidence/data_operations/n4/README.md) passed 168 Python tests, pipeline validation, 14 frontend tests, build and 22 browser scenarios, plus real migration/restart/repeat and inspected downloads. These are local results; GitHub check/adoption status is tracked separately.
 
 The 2026-10-23 G0–G5 baseline passed 103 Python tests, three frontend tests and 12 browser scenarios. The employer-readiness follow-up adds guided samples and XLSX handoff coverage; see the [dated follow-up evidence](docs/evidence/employer_readiness/README.md) for screenshots and restart rehearsal, and the [subsequent hardening checks](docs/evidence/employer_readiness/hardening/README.md) for 124 Python tests, six frontend tests and 14 browser scenarios. Pipeline validation and production build remain required.
 
@@ -111,9 +126,9 @@ After reviewing a ready file, expand recurring import review and save a named ma
 
 Create explicit payer/network/clinic/location records and reviewed exact-code bindings from the intake setup. Configure a file as network participation, review dates/unknown bindings, and accept valid rows explicitly. Recurring network deliveries share one accepted baseline within a declared dataset/network scope. Missing and known invalid rows become review evidence; no automatic termination or verification occurs. Filter work by network/organization/location and download explicitly scoped XLSX/JSON, while all-work export continues to ignore UI filters. See [workflow](docs/OPERATIONS_WORKFLOW.md#recurring-network-review-and-scoped-handoff) and [export contract](docs/API_REFERENCE.md#scoped-network-review-and-handoff).
 
-## Planned next phase
+## Delivery status
 
-The [near-term delivery plan](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) prioritizes the current core as a reviewed publication candidate, the implemented operational SQL pack and recurring clinic imports. [Organization/network participation storage](docs/INTAKE_2_0_PROPOSAL.md#proposed-next-phase-recurring-organization-and-network-rosters) follows that checkpoint. These are planned deliverables, not newly implemented or published capabilities. Clinics/health systems remain organizations; payer-network participation is a separate source-asserted relationship.
+The [P0–P3 roadmap](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) is implemented locally through the guided multi-file network demonstration. Current qualification and publication gates are recorded in [project state](PROJECT_STATE.md) and the [progress checkpoint](docs/INTAKE_2_0_PROGRESS.md). Clinics/health systems remain organizations; payer-network participation is a separate source-asserted relationship.
 
 The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) specify the additions, documentation and acceptance evidence for each PR. Feature claims follow verified behavior; GitHub publication status is tracked separately from local qualification.
 

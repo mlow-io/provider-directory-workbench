@@ -71,7 +71,10 @@ def test_loading_any_sample_uses_retained_normal_intake_without_acceptance(tmp_p
     response = client.post(f'/api/demo/samples/{sample_id}')
     assert response.status_code == 200, response.text
     receipt = response.json()
-    assert receipt['source'] == 'synthetic-demo'
+    assert receipt['source'] == ('synthetic-network-demo' if sample_id.startswith('network-') else 'synthetic-demo')
+    if sample_id.startswith('network-'):
+        assert receipt['state']=='needs_mapping'
+        assert client.get('/api/catalog').json()['networks']==[]
     assert receipt['designation'] == 'synthetic'
     assert receipt['metadata']['demo_sample'] == sample_id
     assert 'SYNTHETIC' in receipt['metadata']['notice']
