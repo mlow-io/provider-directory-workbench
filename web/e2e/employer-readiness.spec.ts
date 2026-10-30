@@ -17,12 +17,21 @@ w.close()
 `, filename], { encoding: 'utf8' }));
 }
 
+async function loadSampleAndSelect(page: import('@playwright/test').Page) {
+  // Repeat labels/counts can still describe the previous receipt during loading.
+  const marker = page.locator('#intake-receipt-detail > p.iw-eyebrow');
+  const previous = await marker.count() ? await marker.textContent() : '';
+  await page.getByRole('button', {name: 'Load synthetic sample'}).click();
+  await expect(marker).toBeVisible();
+  await expect(marker).not.toHaveText(previous ?? '');
+}
+
 test('guided offline sample requires mapping review and downloads complete read-only work handoff', async ({ page, request }, info) => {
   await page.goto('/?view=intake');
   await expect(page.getByRole('heading', {name: 'Start with a clinic roster'})).toBeVisible();
   await expect(page.getByRole('button', {name: 'Load synthetic sample'})).toBeInViewport();
   await page.screenshot({path: info.outputPath('guided-entry.png')});
-  await page.getByRole('button', {name: 'Load synthetic sample'}).click();
+  await loadSampleAndSelect(page);
   await expect(page.getByText('Synthetic example — no real clinicians or payer updates.')).toBeVisible();
   const suggest = page.getByRole('button', {name: 'Use suggested columns'});
   // A later viewport replays the same fixed synthetic source; committed mapping is reused.
@@ -45,7 +54,7 @@ test('guided offline sample requires mapping review and downloads complete read-
   await expect(page.getByRole('heading', {name:'Linked cases'})).toBeVisible();
   const beforeRepeat = (await (await request.get('/api/work')).json()).items.filter((c: {source:string})=>c.source==='synthetic-demo');
   expect(beforeRepeat).toHaveLength(2);
-  await page.getByRole('button', {name:'Load synthetic sample'}).click();
+  await loadSampleAndSelect(page);
   await expect(page.getByText(/Repeat delivery of/)).toBeVisible();
   await page.getByLabel('Reviewer', {exact:true}).first().fill('Synthetic Reviewer');
   await page.getByLabel('Acceptance / rejection reason').fill('Accidental repeat retains scoped work');
