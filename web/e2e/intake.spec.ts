@@ -3,6 +3,16 @@ import path from "node:path";
 
 const fixtures = path.resolve(process.env.PDTL_BROWSER_INPUTS!);
 
+async function uploadAndSelect(page: import('@playwright/test').Page) {
+  // Matching counts can belong to the previous delivery while upload is in flight.
+  const marker = page.locator('#intake-receipt-detail > p.iw-eyebrow');
+  const previous = await marker.count() ? await marker.textContent() : '';
+  await page.getByRole('button', { name: 'Upload and preview' }).click();
+  await expect(marker).toBeVisible();
+  await expect(marker).not.toHaveText(previous ?? '');
+}
+
+
 test("imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens location work", async ({
   page,
 }, info) => {
@@ -12,7 +22,7 @@ test("imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens
   await page
     .getByLabel("Source file", { exact: true })
     .setInputFiles(path.join(fixtures, "synthetic-clinic.xlsx"));
-  await page.getByRole("button", { name: "Upload and preview" }).click();
+  await uploadAndSelect(page);
   await expect(
     page.getByText(
       "Headers must be nonblank and unique; choose another header row",
@@ -57,7 +67,7 @@ test("imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens
   await expect(
     page.getByRole("heading", { name: "Original evidence", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("02108", { exact: false }).first()).toBeVisible();
+  await expect(page.locator(".iw-preview").getByText("02108", { exact: false }).first()).toBeVisible();
   await page
     .getByLabel("Reviewer", { exact: true })
     .first()
@@ -80,7 +90,7 @@ test("imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens
   await page
     .getByLabel("Source file", { exact: true })
     .setInputFiles(path.join(fixtures, "synthetic-clinic.csv"));
-  await page.getByRole("button", { name: "Upload and preview" }).click();
+  await uploadAndSelect(page);
   await expect(
     page.getByText("2 valid · 0 quarantined · 2 total"),
   ).toBeVisible();
@@ -95,7 +105,7 @@ test("imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens
   await expect(
     page.getByRole("heading", { name: "Linked cases" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Upload and preview" }).click();
+  await uploadAndSelect(page);
   await expect(page.getByText(/Repeat delivery of/)).toBeVisible();
   await page
     .getByLabel("Reviewer", { exact: true })
@@ -173,7 +183,7 @@ test("imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens
   await page
     .getByLabel("Source file", { exact: true })
     .setInputFiles(path.join(fixtures, "synthetic-clinic.xlsx"));
-  await page.getByRole("button", { name: "Upload and preview" }).click();
+  await uploadAndSelect(page);
   await expect(
     page.getByText("2 valid · 1 quarantined · 3 total"),
   ).toBeVisible();
@@ -192,7 +202,7 @@ test("imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens
   await page
     .getByLabel("Source file", { exact: true })
     .setInputFiles(path.join(fixtures, "synthetic-changed.csv"));
-  await page.getByRole("button", { name: "Upload and preview" }).click();
+  await uploadAndSelect(page);
   await page
     .getByText("Comparison with prior source deliveries", { exact: true })
     .click();
@@ -244,7 +254,7 @@ test("saved public responses, failures, retry, keyboard and responsive sources",
   await page
     .getByLabel("Source file", { exact: true })
     .setInputFiles(path.join(fixtures, "synthetic-nppes.json"));
-  await page.getByRole("button", { name: "Upload and preview" }).click();
+  await uploadAndSelect(page);
   await expect(
     page.getByText("1 valid · 0 quarantined · 1 total"),
   ).toBeVisible();
@@ -293,7 +303,7 @@ test("saved public responses, failures, retry, keyboard and responsive sources",
   await page
     .getByLabel("Source file", { exact: true })
     .setInputFiles(path.join(fixtures, "synthetic-cms.json"));
-  await page.getByRole("button", { name: "Upload and preview" }).click();
+  await uploadAndSelect(page);
   await expect(
     page.getByText("1 valid · 0 quarantined · 1 total"),
   ).toBeVisible();
@@ -317,7 +327,7 @@ test("saved public responses, failures, retry, keyboard and responsive sources",
       mimeType: "application/json",
       buffer: Buffer.from("{"),
     });
-  await page.getByRole("button", { name: "Upload and preview" }).click();
+  await uploadAndSelect(page);
   await expect(
     page.getByText("Invalid UTF-8 JSON payload", { exact: true }),
   ).toBeVisible();
