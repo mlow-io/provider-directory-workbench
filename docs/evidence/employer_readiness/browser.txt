@@ -1,0 +1,33 @@
+
+> directory-review-console@0.1.0 test:e2e
+> playwright test
+
+[WebServer] INFO:     Started server process [52716]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8100 (Press CTRL+C to quit)
+[WebServer] (node:52757) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 14 tests using 1 worker
+
+(node:52759) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [wide] › e2e/employer-readiness.spec.ts:20:1 › guided offline sample requires mapping review and downloads complete read-only work handoff (3.3s)
+  ✓   2 [wide] › e2e/intake.spec.ts:6:1 › imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens location work (3.8s)
+  ✓   3 [wide] › e2e/intake.spec.ts:236:1 › saved public responses, failures, retry, keyboard and responsive sources (1.4s)
+  ✓   4 [wide] › e2e/intake.spec.ts:366:1 › shows loading and empty receipt states and preserves a draft on stale case conflict (881ms)
+  ✓   5 [wide] › e2e/remediation-workflow.spec.ts:31:1 › records the payer remediation golden path with immutable evidence (1.2s)
+  ✓   6 [wide] › e2e/remediation-workflow.spec.ts:45:1 › reopens a remediation case when verification does not match the approved proposal (1.1s)
+  ✓   7 [wide] › e2e/review-console.spec.ts:3:1 › reviews missing-field, stale-verification, and duplicate candidate cases (1.4s)
+(node:52861) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 [mobile] › e2e/employer-readiness.spec.ts:20:1 › guided offline sample requires mapping review and downloads complete read-only work handoff (2.4s)
+  ✓   9 [mobile] › e2e/intake.spec.ts:6:1 › imports XLSX and CSV, quarantines, preserves repeats, verifies and reopens location work (5.3s)
+  ✓  10 [mobile] › e2e/intake.spec.ts:236:1 › saved public responses, failures, retry, keyboard and responsive sources (2.1s)
+  ✓  11 [mobile] › e2e/intake.spec.ts:366:1 › shows loading and empty receipt states and preserves a draft on stale case conflict (1.4s)
+  ✓  12 [mobile] › e2e/remediation-workflow.spec.ts:31:1 › records the payer remediation golden path with immutable evidence (1.4s)
+  ✓  13 [mobile] › e2e/remediation-workflow.spec.ts:45:1 › reopens a remediation case when verification does not match the approved proposal (1.4s)
+  ✓  14 [mobile] › e2e/review-console.spec.ts:3:1 › reviews missing-field, stale-verification, and duplicate candidate cases (2.2s)
+
+  14 passed (34.8s)

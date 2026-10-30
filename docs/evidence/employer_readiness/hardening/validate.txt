@@ -1,0 +1,39 @@
+PUBLICATION COPY: Local machine paths normalized; original historical log retained privately.
+python3 -m pytest
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.4.2, pluggy-1.6.0
+rootdir: .
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.9.0, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 124 items
+
+tests/test_demo_launcher.py .........                                    [  7%]
+tests/test_employer_readiness.py ...........                             [ 16%]
+tests/test_export.py ......                                              [ 20%]
+tests/test_intake_adapters.py ....................................       [ 50%]
+tests/test_intake_api.py ....                                            [ 53%]
+tests/test_intake_store.py .........................                     [ 73%]
+tests/test_normalize.py ....                                             [ 76%]
+tests/test_npi_api.py .....                                              [ 80%]
+tests/test_pipeline.py ....                                              [ 83%]
+tests/test_remediation.py .......                                        [ 89%]
+tests/test_remediation_api.py .......                                    [ 95%]
+tests/test_review_api.py ...                                             [ 97%]
+tests/test_storage.py ..                                                 [ 99%]
+tests/test_work_export_scope.py .                                        [100%]
+
+============================= 124 passed in 7.35s ==============================
+python3 scripts/run_validation.py
+Provider Directory Truth Layer run complete
+records: 12.0
+records_with_issues: 9.0
+total_issues: 11.0
+payer_listings: 8
+field_discrepancies: 6
+outputs: ./.runtime/validation-k8ahyjbt/exports
+[OK] Provider Directory Truth Layer validation passed
+[OK] Outputs present and exception report populated
+[OK] SQLite review database contains expected tables
+Retained validation root: ./.runtime/validation-k8ahyjbt

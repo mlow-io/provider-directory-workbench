@@ -1,0 +1,13 @@
+
+> directory-review-console@0.1.0 build
+> tsc -b && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 82 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:   0.29 kB
+dist/assets/index-CrA0C1hR.css   23.66 kB │ gzip:   5.96 kB
+dist/assets/index-BjUgrT2d.js   347.62 kB │ gzip: 102.46 kB
+✓ built in 989ms

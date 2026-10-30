@@ -1,0 +1,51 @@
+required_fields:
+  - npi
+  - provider_name
+  - specialty
+  - address
+  - city
+  - state
+  - phone
+phone_min_digits: 10
+active_status_values:
+  - active
+stale_days_threshold: 365
+duplicate_match_fields:
+  - normalized_provider_name
+  - normalized_address
+  - normalized_city
+  - state
+remediation:
+  comparison_fields:
+    - npi
+    - provider_name
+    - specialty
+    - address
+    - city
+    - state
+    - zip
+    - phone
+    - accepting_new_patients
+    - status
+  field_source_precedence:
+    npi: [NPPES-like export, health-system roster, clinic directory, payer directory]
+    provider_name: [NPPES-like export, health-system roster, clinic directory, payer directory]
+    specialty: [health-system roster, clinic directory, NPPES-like export, payer directory]
+    address: [clinic directory, health-system roster, NPPES-like export, payer directory]
+    city: [clinic directory, health-system roster, NPPES-like export, payer directory]
+    state: [clinic directory, health-system roster, NPPES-like export, payer directory]
+    zip: [clinic directory, health-system roster, NPPES-like export, payer directory]
+    phone: [clinic directory, health-system roster, NPPES-like export, payer directory]
+    accepting_new_patients: [clinic directory, health-system roster, payer directory]
+    status: [health-system roster, clinic directory, payer directory, NPPES-like export]
+  risk_by_field:
+    npi: high
+    provider_name: medium
+    specialty: medium
+    address: high
+    city: high
+    state: high
+    zip: high
+    phone: high
+    accepting_new_patients: medium
+    status: high

@@ -1,0 +1,15 @@
+{
+  "kind": "synthetic in-memory regression reproduction",
+  "expected": {
+    "npi": "missing",
+    "zip": "02108",
+    "missing_npi_issue": true
+  },
+  "observed": {
+    "npi": "nan",
+    "zip": "2108",
+    "issue_count": 0
+  },
+  "source": "current CSV inference and normalization path",
+  "changes_made": false
+}

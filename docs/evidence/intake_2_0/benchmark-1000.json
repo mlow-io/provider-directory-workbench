@@ -1,0 +1,15 @@
+{
+  "synthetic_rows": 1000,
+  "bytes": 98850,
+  "preview_seconds": 0.053,
+  "commit_seconds": 0.481,
+  "committed_rows_per_second": 2079.5,
+  "peak_process_rss_mib": 115.1,
+  "integrity": "ok",
+  "foreign_key_violations": 0,
+  "limits": {
+    "artifact_bytes": 10485760,
+    "tabular_rows": 20000
+  },
+  "scope": "Single local process; parsing plus retained JSON/evidence, no network; RSS is entire Python process"
+}

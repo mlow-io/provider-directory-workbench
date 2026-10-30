@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "provider-directory-truth-layer"
+version = "2.0.0"
+description = "Provider directory QA and exception-reporting pipeline."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "certifi>=2024.0",
+  "fastapi>=0.115",
+  "openpyxl>=3.1",
+  "pandas>=2.0,<3.0",
+  "pyyaml>=6.0",
+  "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.27",
+  "pytest>=8.0",
+]
+
+[project.scripts]
+provider-truth-layer = "provider_directory_truth_layer.cli:main"
+provider-review-api = "provider_directory_truth_layer.review_api:run"
+provider-remediation-api = "provider_directory_truth_layer.remediation_api:run"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

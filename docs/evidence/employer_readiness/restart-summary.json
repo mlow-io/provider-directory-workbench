@@ -1,0 +1,8 @@
+{
+  "comparison": "Exact equality of all case/event/receipt/observation rows and input/artifact hashes",
+  "passed": true,
+  "cases": 2,
+  "events": 10,
+  "receipts": 4,
+  "observations": 6
+}

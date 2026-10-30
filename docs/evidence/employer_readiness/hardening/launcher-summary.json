@@ -1,0 +1,25 @@
+[
+  {
+    "check": "occupied port before storage writes",
+    "exit_code": 1,
+    "root_created": false
+  },
+  {
+    "check": "actual API child exit shuts down sibling",
+    "exit_code": 1,
+    "data_preserved": true,
+    "ports_closed": true
+  },
+  {
+    "check": "real restart then Ctrl-C",
+    "exit_code": 0,
+    "exact_snapshot_preserved": true,
+    "ports_closed": true,
+    "counts": {
+      "receipt": 1,
+      "observation": 2,
+      "work_case": 2,
+      "work_event": 1
+    }
+  }
+]

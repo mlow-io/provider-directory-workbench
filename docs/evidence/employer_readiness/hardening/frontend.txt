@@ -1,0 +1,13 @@
+PUBLICATION COPY: Local machine paths normalized; original historical log retained privately.
+
+> directory-review-console@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.5 ./web
+
+
+ Test Files  3 passed (3)
+      Tests  6 passed (6)
+   Start at  18:27:21
+   Duration  2.24s (environment 39%, tests 35%, import 13%, setup 9%, transform 2%, worker 1%)

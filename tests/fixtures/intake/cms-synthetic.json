@@ -1,0 +1,33 @@
+{
+  "count": 3,
+  "results": [
+    {
+      "NPI": "1000000001",
+      "Ind_PAC_ID": "synthetic-pac",
+      "Ind_enrl_ID": "synthetic-enroll-1",
+      "Org_PAC_ID": "synthetic-group",
+      "adrs_id": "synthetic-address-A",
+      "Provider First Name": "Synthetic",
+      "Provider Last Name": "Clinician",
+      "adr_ln_1": "10 Fiction St",
+      "City/Town": "Example",
+      "State": "TN",
+      "ZIP Code": "01234",
+      "Telephone Number": "5550100000",
+      "Pri_spec": "Synthetic medicine"
+    },
+    {
+      "NPI": "1000000001",
+      "Ind_enrl_ID": "synthetic-enroll-1",
+      "Org_PAC_ID": "synthetic-group",
+      "adrs_id": "synthetic-address-B",
+      "adr_ln_1": "20 Fiction St"
+    },
+    {
+      "NPI": "1000000001",
+      "Ind_enrl_ID": "synthetic-enroll-2",
+      "Org_PAC_ID": "",
+      "adrs_id": ""
+    }
+  ]
+}

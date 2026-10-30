@@ -1,0 +1,9 @@
+listing_id,reference_provider_key,npi,provider_name,specialty,address,city,state,zip,phone,accepting_new_patients,status,last_verified_date
+PAYER-00001,npi:1234567890,1234567890,Sarah Patel MD,Cardiology,201 23rd Ave N Ste 400,Nashville,TN,37203,615-555-0181,yes,active,2026-03-15
+PAYER-00002,npi:3234567892,3234567892,Anita Shah NP,Primary Care,500 Church St,Nashville,GA,37219,615-555-0199,unknown,active,2024-12-01
+PAYER-00003,npi:4234567893,4234567893,James Coleman MD,Orthopedics,300 Stonecrest Blvd,Smyrna,TN,37167,615-555-0188,no,active,2025-11-20
+PAYER-00004,npi:7234567896,7234567896,Maria Garcia MD,Endocrinology,,Brentwood,TN,37027,615-555-0177,yes,active,2026-01-30
+PAYER-00005,npi:9234567898,9234567898,Keisha Thompson MD,Pediatrics,2201 Murphy Ave,Nashville,TN,37203,615-555-0198,yes,active,2026-05-12
+PAYER-00006,npi:1034567899,1034567890,Laura Chen MD,Behavioral Health,101 Creekstone Blvd,Franklin,TN,37064,615-555-0112,no,active,
+PAYER-00007,npi:2234567891,2234567891,Jordan Ellis DO,Family Medicine,1101 Gallatin Pike,Madison,TN,37115,615-555-0190,yes,active,2026-01-11
+PAYER-00008,reference:unknown-provider,9999999999,Unknown Listing,Primary Care,1 Unknown Way,Nashville,TN,37201,615-555-0191,unknown,active,2026-01-01

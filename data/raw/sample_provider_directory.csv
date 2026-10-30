@@ -1,0 +1,13 @@
+record_id,npi,provider_name,specialty,address,city,state,zip,phone,accepting_new_patients,source,status,last_verified_date
+REC-00001,1234567890,Sarah Patel MD,Cardiology,201 23rd Ave N Ste 400,Nashville,TN,37203,(615) 555-0101,yes,NPPES-like export,active,2026-03-15
+REC-00002,1234567890,Sarah Patel MD,Cardiology,201 23rd Avenue North Suite 400,Nashville,TN,37203,615.555.0101,yes,payer directory,active,2026-02-28
+REC-00003,2234567891,Jordan Ellis DO,Family Medicine,1101 Gallatin Pike,Madison,TN,37115,,yes,clinic directory,active,2026-01-11
+REC-00004,3234567892,Anita Shah NP,Primary Care,500 Church St,Nashville,TN,37219,615-555-0199,unknown,health-system roster,active,2024-12-01
+REC-00005,4234567893,James Coleman MD,Orthopedics,300 Stonecrest Blvd,Smyrna,TN,37167,6155550188,no,NPPES-like export,inactive,2025-11-20
+REC-00006,,Emily Nguyen PA,Dermatology,2400 Patterson St,Nashville,TN,37203,615-555-0144,yes,payer directory,active,2026-04-02
+REC-00007,6234567895,Robert Lane MD,,3443 Dickerson Pike,Nashville,TN,37207,615-555-0166,yes,clinic directory,active,2026-03-02
+REC-00008,7234567896,Maria Garcia MD,Endocrinology,,Brentwood,TN,37027,615-555-0177,maybe,health-system roster,active,2026-01-30
+REC-00009,8234567897,David Wilson MD,Neurology,1211 Medical Center Dr,Nashville,TN,37232,615-555-0120,yes,NPPES-like export,active,2023-09-15
+REC-00010,9234567898,Keisha Thompson MD,Pediatrics,2201 Murphy Ave,Nashville,TN,37203,615-555-0133,yes,payer directory,active,2026-05-10
+REC-00011,9234567898,Keisha Thompson MD,Pediatrics,2201 Murphy Avenue,Nashville,TN,37203,6155550133,yes,clinic directory,active,2026-05-12
+REC-00012,1034567899,Laura Chen MD,Behavioral Health,101 Creekstone Blvd,Franklin,TN,37064,615-555-0112,no,health-system roster,active,

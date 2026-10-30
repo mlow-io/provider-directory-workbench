@@ -1,0 +1,62 @@
+{
+  "result_count": 2,
+  "results": [
+    {
+      "number": "1000000001",
+      "enumeration_type": "NPI-1",
+      "basic": {
+        "first_name": "Synthetic",
+        "last_name": "Clinician",
+        "last_updated": "2026-10-01",
+        "status": "A"
+      },
+      "addresses": [
+        {
+          "address_1": "10 Fiction St",
+          "city": "Example",
+          "state": "TN",
+          "postal_code": "012340001",
+          "address_purpose": "LOCATION"
+        },
+        {
+          "address_1": "PO Box 9",
+          "address_purpose": "MAILING"
+        }
+      ],
+      "practiceLocations": [
+        {
+          "address_1": "20 Fiction St",
+          "address_purpose": "LOCATION"
+        }
+      ],
+      "taxonomies": [
+        {
+          "code": "A",
+          "desc": "Synthetic primary",
+          "primary": true
+        },
+        {
+          "code": "B",
+          "desc": "Synthetic secondary",
+          "primary": false
+        }
+      ],
+      "identifiers": [
+        {
+          "identifier": "synthetic-id"
+        }
+      ],
+      "unknown_future_field": {
+        "keep": true
+      }
+    },
+    {
+      "basic": {
+        "organization_name": "Synthetic Missing Identity",
+        "status": "X"
+      },
+      "addresses": [],
+      "taxonomies": []
+    }
+  ]
+}

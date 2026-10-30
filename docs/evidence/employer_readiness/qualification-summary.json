@@ -1,0 +1,32 @@
+{
+  "python": {
+    "passed": 114,
+    "failures": 0,
+    "skips": 0
+  },
+  "frontend": {
+    "passed": 6,
+    "files": 3
+  },
+  "browser": {
+    "passed": 14,
+    "failures": 0,
+    "skips": 0,
+    "viewports": [
+      "1440x960",
+      "390x844"
+    ]
+  },
+  "pipeline": {
+    "records": 12,
+    "findings": 11,
+    "discrepancies": 6
+  },
+  "production_build": "passed",
+  "restart": "exact data/input/artifact equality",
+  "preserved_prior_files": 137,
+  "schema_version": 2,
+  "public_network_checks": "not rerun",
+  "remote_ci": "not run",
+  "publication_note": "Historical local qualification; public snapshot and CI require separate checks."
+}

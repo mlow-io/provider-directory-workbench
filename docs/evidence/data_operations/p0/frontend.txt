@@ -1,0 +1,14 @@
+Publication copy: machine-specific checkout/temporary paths normalized; exact original retained locally.
+
+
+> directory-review-console@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.5 <checkout>/web
+
+
+ Test Files  3 passed (3)
+      Tests  6 passed (6)
+   Start at  07:17:31
+   Duration  5.09s (environment 41%, tests 27%, transform 12%, import 10%, setup 9%, worker 1%)

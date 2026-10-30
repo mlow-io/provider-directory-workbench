@@ -1,0 +1,75 @@
+[
+  {
+    "source": "nppes",
+    "http_status": 200,
+    "receipt_id": "7fb3cb507c3f4beca954cbbdde9c7980",
+    "state": "preview_ready",
+    "artifact_sha": "26b37d6a5e9df09e044a3100ff97f36402bba0e48e3cefd54486c9e9fa9e5d9a",
+    "metadata": {
+      "adapter_version": "intake-public-v1",
+      "cache_status": "fresh_network",
+      "completeness": "bounded page; not a complete directory",
+      "lookup_query": {
+        "city": "Nashville",
+        "limit": 1,
+        "state": "TN"
+      },
+      "request_url": "https://npiregistry.cms.hhs.gov/api/?city=Nashville&state=TN&limit=1&skip=0&version=2.1",
+      "response_sha256": "26b37d6a5e9df09e044a3100ff97f36402bba0e48e3cefd54486c9e9fa9e5d9a",
+      "retrieved_at": "2026-10-23T21:27:22.313179+00:00",
+      "returned_count": 1,
+      "scope": {
+        "city": "Nashville",
+        "limit": 1,
+        "skip": 0,
+        "state": "TN"
+      },
+      "source": "nppes",
+      "total_matches": null,
+      "truncated": true
+    },
+    "preview_counts": {
+      "valid_count": 1,
+      "quarantined_count": 0,
+      "total": 1
+    },
+    "error": null
+  },
+  {
+    "source": "cms",
+    "http_status": 200,
+    "receipt_id": "066d681462ee46bf945e2ddac6b3aa63",
+    "state": "preview_ready",
+    "artifact_sha": "674938945073f5746a92959ff9044fc28a3bc8f96f380f99c59db3c6a37bfa3b",
+    "metadata": {
+      "adapter_version": "intake-public-v1",
+      "cache_status": "fresh_network",
+      "completeness": "bounded page; not a complete directory",
+      "dataset_id": "mj5m-pzi6",
+      "dataset_metadata_url": "https://data.cms.gov/provider-data/api/1/metastore/schemas/dataset/items/mj5m-pzi6",
+      "distribution_index": 0,
+      "lookup_query": {
+        "limit": 1
+      },
+      "request_url": "https://data.cms.gov/provider-data/api/1/datastore/query/mj5m-pzi6/0?limit=1&offset=0&count=true&results=true",
+      "response_sha256": "674938945073f5746a92959ff9044fc28a3bc8f96f380f99c59db3c6a37bfa3b",
+      "retrieved_at": "2026-10-23T21:27:22.589383+00:00",
+      "returned_count": 1,
+      "scope": {
+        "limit": 1,
+        "offset": 0
+      },
+      "source": "cms",
+      "source_modified_date": "2026-10-02",
+      "source_publication_date": "2026-10-15",
+      "total_matches": 3630233,
+      "truncated": true
+    },
+    "preview_counts": {
+      "valid_count": 1,
+      "quarantined_count": 0,
+      "total": 1
+    },
+    "error": null
+  }
+]
