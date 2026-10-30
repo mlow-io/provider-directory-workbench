@@ -13,6 +13,7 @@ import os
 import re
 import sqlite3
 import uuid
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -115,14 +116,14 @@ class IntakeStore:
                 if tables:
                     backup = self.path.with_name(self.path.name + '.pre-intake-v1.bak')
                     if not backup.exists():
-                        with sqlite3.connect(backup) as target:
+                        with closing(sqlite3.connect(backup)) as target:
                             conn.backup(target)
                 conn.executescript('BEGIN IMMEDIATE;\n' + SCHEMA[0] + "\ninsert into schema_migration values (1, datetime('now'));\npragma user_version=1;\nCOMMIT;")
             if version < 2:
                 if version == 1:
                     backup = self.path.with_name(self.path.name + '.pre-intake-v2.bak')
                     if not backup.exists():
-                        with sqlite3.connect(backup) as target:
+                        with closing(sqlite3.connect(backup)) as target:
                             conn.backup(target)
                 conn.executescript("BEGIN IMMEDIATE; ALTER TABLE relationship ADD COLUMN location_index integer; INSERT INTO schema_migration VALUES (2, datetime('now')); PRAGMA user_version=2; COMMIT;")
             if version < 3:
@@ -130,7 +131,7 @@ class IntakeStore:
                 if version >= 1:
                     backup = self.path.with_name(self.path.name + '.pre-intake-v3.bak')
                     if not backup.exists():
-                        with sqlite3.connect(backup) as target:
+                        with closing(sqlite3.connect(backup)) as target:
                             conn.backup(target)
                 conn.executescript("BEGIN IMMEDIATE;\n" + MIGRATION_3 + "\nINSERT INTO schema_migration VALUES (3, datetime('now')); PRAGMA user_version=3; COMMIT;")
             if version < 4:
@@ -138,7 +139,7 @@ class IntakeStore:
                 if version >= 1:
                     backup = self.path.with_name(self.path.name + '.pre-intake-v4.bak')
                     if not backup.exists():
-                        with sqlite3.connect(backup) as target:
+                        with closing(sqlite3.connect(backup)) as target:
                             conn.backup(target)
                 conn.executescript("BEGIN IMMEDIATE;\n" + MIGRATION_4 + "\nINSERT INTO schema_migration VALUES (4, datetime('now')); PRAGMA user_version=4; COMMIT;")
             # A killed process can leave a processing marker, but no partial committed batch.

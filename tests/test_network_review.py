@@ -2,6 +2,7 @@
 
 import csv
 import hashlib
+import gc
 import io
 import json
 
@@ -179,6 +180,7 @@ def test_scoped_work_and_exports_exclude_unrelated_network_rows(store):
     client = TestClient(create_workbench(store.path, store.root))
     artifact = store.artifacts / first["artifact_sha"]
     before = (_hash(store.path), _hash(artifact))
+    gc.collect()  # Prior request connections must already be closed; export cannot checkpoint a late writer.
     response = client.get("/api/work-export.json", params={"network_id": cedar_id})
     assert response.status_code == 200
     snapshot = response.json()
