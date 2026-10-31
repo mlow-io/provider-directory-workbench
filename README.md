@@ -97,9 +97,19 @@ git diff --check
 
 CI includes isolated browser tests and retained failure traces. Network calls remain separate from deterministic checks. `make validate-public` tests the compatibility sample downloader with isolated storage; it is not the durable adapter demonstration.
 
+## Operational SQL
+
+Run read-only questions against an existing durable intake database: follow-up cases, original receipt/row lineage, deterministic latest events, and differences between two selected accepted deliveries. The [query guide](docs/OPERATIONAL_SQL.md) declares result grain, parameters, synthetic outputs and limits.
+
+```bash
+PYTHONPATH=src python3 -m provider_directory_truth_layer.operations_sql --db .runtime/my-work/directory.sqlite3 follow-up --as-of 2026-10-30
+```
+
+Use an existing intake database, or run `python3 -m pytest -q tests/test_operations_sql.py` to create disposable synthetic SQLite fixtures and verify all four examples. See the [publication qualification](docs/evidence/data_operations/p1/README.md) for dated checks. The CLI compares accepted deliveries; application preview behavior remains separate.
+
 ## Planned next phase
 
-The [near-term delivery plan](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) prioritizes the current core as a reviewed publication candidate, a small read-only SQL example pack, then saved source mappings and readable delivery comparisons. [Organization/network participation storage](docs/INTAKE_2_0_PROPOSAL.md#proposed-next-phase-recurring-organization-and-network-rosters) follows that checkpoint. These are planned deliverables, not newly implemented or published capabilities. Clinics/health systems remain organizations; payer-network participation is a separate source-asserted relationship.
+The core and operational SQL examples are implemented. Next in the [near-term delivery plan](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) are saved source mappings and readable accepted-delivery comparisons in the application. [Organization/network participation storage](docs/INTAKE_2_0_PROPOSAL.md#proposed-next-phase-recurring-organization-and-network-rosters) follows that checkpoint. These recurring-import and network features remain planned. Clinics/health systems remain organizations; payer-network participation is a separate source-asserted relationship.
 
 The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) specify the additions, documentation and acceptance evidence for each PR. Feature claims follow verified behavior; GitHub publication status is tracked separately from local qualification.
 

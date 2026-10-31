@@ -1,6 +1,6 @@
 # Intake Workbench delivery status
 
-Updated 2026-10-30. The G0–G5 intake workbench, guided synthetic demo, and read-only XLSX handoff are implemented locally. P1 operational SQL and N1–N4 recurring import/network capabilities in the [roadmap](INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) remain planned.
+Updated 2026-10-31. The G0–G5 intake workbench, guided synthetic demo, read-only XLSX handoff, and P1 [operational SQL](OPERATIONAL_SQL.md) are implemented. The [SQL qualification](evidence/data_operations/p1/README.md) records publication checks. N1–N4 recurring import/network capabilities in the [roadmap](INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) remain planned.
 
 ## Verified historical checkpoints
 
@@ -12,4 +12,4 @@ Fresh [2026-10-30 snapshot qualification](evidence/data_operations/p0/README.md)
 
 ## Next delivery
 
-Add the P1 read-only SQL query pack and runner, followed by N1 saved mapping and accepted-delivery comparison, and N2–N4 scoped organization/network records and multi-file demonstration. Update the API, data, workflow, and operator documents alongside each implemented slice. The supported offline entry is `make workbench`; follow the [demo procedure](operations_governance/sop_provider_remediation.md).
+Next is N1 saved mapping and accepted-delivery comparison in the application, and N2–N4 scoped organization/network records and multi-file demonstration. Update the API, data, workflow, and operator documents alongside each implemented slice. The supported offline entry is `make workbench`; follow the [demo procedure](operations_governance/sop_provider_remediation.md).

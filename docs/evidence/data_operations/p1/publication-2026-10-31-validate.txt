@@ -1,0 +1,46 @@
+Publication copy: checkout path normalized.
+
+python3 -m pytest
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-9.2.0, pluggy-1.7.0
+rootdir: <checkout>
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1
+collected 130 items
+
+tests/test_demo_launcher.py .........                                    [  6%]
+tests/test_employer_readiness.py ...........                             [ 15%]
+tests/test_export.py ......                                              [ 20%]
+tests/test_intake_adapters.py ....................................       [ 47%]
+tests/test_intake_api.py ....                                            [ 50%]
+tests/test_intake_store.py .........................                     [ 70%]
+tests/test_normalize.py ....                                             [ 73%]
+tests/test_npi_api.py .....                                              [ 76%]
+tests/test_operations_sql.py ......                                      [ 81%]
+tests/test_pipeline.py ....                                              [ 84%]
+tests/test_remediation.py .......                                        [ 90%]
+tests/test_remediation_api.py .......                                    [ 95%]
+tests/test_review_api.py ...                                             [ 97%]
+tests/test_storage.py ..                                                 [ 99%]
+tests/test_work_export_scope.py .                                        [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.13/site-packages/fastapi/testclient.py:1
+  <checkout>/.venv/lib/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 130 passed, 1 warning in 11.46s ========================
+python3 scripts/run_validation.py
+Provider Directory Truth Layer run complete
+records: 12.0
+records_with_issues: 9.0
+total_issues: 11.0
+payer_listings: 8
+field_discrepancies: 6
+outputs: <checkout>/.runtime/validation-1d83wmn3/exports
+[OK] Provider Directory Truth Layer validation passed
+[OK] Outputs present and exception report populated
+[OK] SQLite review database contains expected tables
+Retained validation root: <checkout>/.runtime/validation-1d83wmn3
