@@ -1,0 +1,218 @@
+{
+  "fixture": "tests/test_operations_sql.py::operations_db",
+  "results": {
+    "follow-up": [
+      {
+        "case_id": "c1",
+        "status": "new",
+        "owner": null,
+        "follow_up": "2026-01-01",
+        "risk_level": "low",
+        "provider_name": "Synthetic Provider",
+        "field_name": "phone",
+        "unassigned": 1,
+        "overdue": 1
+      },
+      {
+        "case_id": "c4",
+        "status": "deferred",
+        "owner": "owner",
+        "follow_up": "2026-01-15",
+        "risk_level": "low",
+        "provider_name": "Synthetic Provider",
+        "field_name": "phone",
+        "unassigned": 0,
+        "overdue": 1
+      },
+      {
+        "case_id": "c7",
+        "status": "new",
+        "owner": null,
+        "follow_up": "2026-02-01",
+        "risk_level": "low",
+        "provider_name": "Synthetic Provider",
+        "field_name": "phone",
+        "unassigned": 1,
+        "overdue": 0
+      }
+    ],
+    "lineage": [
+      {
+        "case_id": "c1",
+        "status": "new",
+        "initial_evidence": "{}",
+        "observation_id": "o1",
+        "locator": "row:2",
+        "native_id": "native-a",
+        "original": "{\"phone\":\"old\"}",
+        "normalized": "{\"location_id\":\"north\",\"phone\":\"old\"}",
+        "attempt_id": "a1",
+        "attempt_state": "committed",
+        "receipt_id": "r1",
+        "receipt_label": "first.csv",
+        "source": "clinic",
+        "profile": "flat",
+        "artifact_sha": "sha",
+        "received_at": "2026-01-01"
+      },
+      {
+        "case_id": "c1",
+        "status": "new",
+        "initial_evidence": "{}",
+        "observation_id": "o2",
+        "locator": "row:3",
+        "native_id": "native-b",
+        "original": "{}",
+        "normalized": "{\"location_id\":\"north\",\"phone\":null}",
+        "attempt_id": "a1",
+        "attempt_state": "committed",
+        "receipt_id": "r1",
+        "receipt_label": "first.csv",
+        "source": "clinic",
+        "profile": "flat",
+        "artifact_sha": "sha",
+        "received_at": "2026-01-01"
+      },
+      {
+        "case_id": "c1",
+        "status": "new",
+        "initial_evidence": "{}",
+        "observation_id": "o3",
+        "locator": "row:4",
+        "native_id": "native-a",
+        "original": "{\"phone\":\"new\"}",
+        "normalized": "{\"location_id\":\"north\",\"phone\":\"new\"}",
+        "attempt_id": "a2",
+        "attempt_state": "committed",
+        "receipt_id": "r2",
+        "receipt_label": "second.csv",
+        "source": "clinic",
+        "profile": "flat",
+        "artifact_sha": "sha",
+        "received_at": "2026-02-01"
+      }
+    ],
+    "latest-event": [
+      {
+        "case_id": "c1",
+        "current_status": "new",
+        "event_id": 2,
+        "action": "note",
+        "actor": "operator",
+        "reason": "fixture",
+        "from_status": "triaged",
+        "to_status": "triaged",
+        "occurred_at": "2026-01-01T12:00:00"
+      },
+      {
+        "case_id": "c2",
+        "current_status": "new",
+        "event_id": null,
+        "action": null,
+        "actor": null,
+        "reason": null,
+        "from_status": null,
+        "to_status": null,
+        "occurred_at": null
+      },
+      {
+        "case_id": "c3",
+        "current_status": "new",
+        "event_id": null,
+        "action": null,
+        "actor": null,
+        "reason": null,
+        "from_status": null,
+        "to_status": null,
+        "occurred_at": null
+      },
+      {
+        "case_id": "c4",
+        "current_status": "deferred",
+        "event_id": null,
+        "action": null,
+        "actor": null,
+        "reason": null,
+        "from_status": null,
+        "to_status": null,
+        "occurred_at": null
+      },
+      {
+        "case_id": "c5",
+        "current_status": "resolved",
+        "event_id": null,
+        "action": null,
+        "actor": null,
+        "reason": null,
+        "from_status": null,
+        "to_status": null,
+        "occurred_at": null
+      },
+      {
+        "case_id": "c6",
+        "current_status": "new",
+        "event_id": null,
+        "action": null,
+        "actor": null,
+        "reason": null,
+        "from_status": null,
+        "to_status": null,
+        "occurred_at": null
+      },
+      {
+        "case_id": "c7",
+        "current_status": "new",
+        "event_id": null,
+        "action": null,
+        "actor": null,
+        "reason": null,
+        "from_status": null,
+        "to_status": null,
+        "occurred_at": null
+      }
+    ],
+    "compare": [
+      {
+        "native_id": "native-a",
+        "location_key": "north",
+        "difference": "changed",
+        "left_observation_id": "o1",
+        "left_locator": "row:2",
+        "left_normalized": "{\"location_id\":\"north\",\"phone\":\"old\"}",
+        "right_observation_id": "o3",
+        "right_locator": "row:4",
+        "right_normalized": "{\"location_id\":\"north\",\"phone\":\"new\"}"
+      },
+      {
+        "native_id": "native-b",
+        "location_key": "north",
+        "difference": "missing_from_right",
+        "left_observation_id": "o2",
+        "left_locator": "row:3",
+        "left_normalized": "{\"location_id\":\"north\",\"phone\":null}",
+        "right_observation_id": null,
+        "right_locator": null,
+        "right_normalized": null
+      },
+      {
+        "native_id": "native-c",
+        "location_key": "north",
+        "difference": "new",
+        "left_observation_id": null,
+        "left_locator": null,
+        "left_normalized": null,
+        "right_observation_id": "o4",
+        "right_locator": "row:5",
+        "right_normalized": "{\"location_id\":\"north\",\"phone\":null}"
+      }
+    ]
+  },
+  "durable_hashes_before": {
+    "intake.sqlite3": "037f8d77ead8fe90b6054cd7b5e8c5f04ca8861b401f1aef77cda0c44776e379",
+    "original.csv": "aa3eadf08b9aa6de99e0e4d9642d86aa39983980c75911f10dafc58d03eea2cd"
+  },
+  "durable_hashes_after": {
+    "intake.sqlite3": "037f8d77ead8fe90b6054cd7b5e8c5f04ca8861b401f1aef77cda0c44776e379",
+    "original.csv": "aa3eadf08b9aa6de99e0e4d9642d86aa39983980c75911f10dafc58d03eea2cd"
+  }
+}
