@@ -4,6 +4,7 @@ Updated 2026-10-30. Local Intake Workbench 2.0; original G0–G5 baseline and th
 
 ## Implemented behavior
 
+- Four documented read-only operational SQL questions and a parameterized source-checkout runner, with synthetic SQLite regressions for row grain, absent evidence, tied events, ambiguous delivery identity and durable read-only operation.
 - String-safe legacy QA pipeline and preserved current-batch review/remediation compatibility views; source updates are separate from human verification.
 - Unified FastAPI application with durable CSV/XLSX/explicit JSON intake, original hashed artifacts, receipt and attempt history, parsing controls, mapping, full bounded validation, explicit acceptance/rejection and quarantine exports.
 - Native NPPES and CMS Doctors and Clinicians adapters, bounded public reads, raw response/error retention, dataset metadata, fifteen-minute retained-response replay and asserted unfetched links. Multiple locations/taxonomies and clinician/enrollment/group/address grain remain inspectable.
@@ -22,13 +23,15 @@ The 2026-10-26 follow-up passed **114 Python tests**, isolated pipeline validati
 
 Subsequent regression hardening passed **124 Python tests**, pipeline validation, six frontend tests, production build and 14 browser scenarios. Later native evidence/relationship exports now retain the selected case scope; launcher port/service failures return nonzero and clean up sibling/descendant services. Real failure/restart checks preserved exact work and originals; all 272 pre-existing runtime files remained unchanged. See the [hardening evidence](docs/evidence/employer_readiness/hardening/README.md).
 
+The 2026-10-30 [operational SQL qualification](docs/evidence/data_operations/p1/README.md) recorded 130 Python tests and isolated pipeline validation in the original SQL checkout. Public CI is checked independently; the SQL runner does not change the existing application workflow.
+
 Integrated bounded live NPPES and CMS reads succeeded on 2026-10-23, one record each, both explicitly truncated. Public data is not certified truth. Synthetic offline fixtures are separate from retained live observations.
 
 ## Limits and trade-offs
 
 The service uses bounded worker-thread requests and persisted attempts, not a separate persistent job queue. Initial operational comparison is location phone listed-versus-requested; there is no generalized reconciliation engine. Legacy QA remains a generated current-batch compatibility view; old originals are never fabricated. New intake work is durable.
 
-Current delivery comparison takes the latest observation per native key across source history and classifies parsed rows including quarantine. It does not establish a single accepted-delivery or prospective accepted-row diff. The planned N1 slice explicitly addresses baseline selection and present-but-invalid rows before expanding comparisons to networks.
+Current **in-app** delivery comparison takes the latest observation per native key across source history and classifies parsed rows including quarantine. It does not establish a single accepted-delivery or prospective accepted-row diff. The separate read-only SQL runner compares two explicitly selected accepted attempts, without changing in-app preview semantics. The planned N1 slice addresses baseline selection and present-but-invalid rows within the application before expanding comparisons to networks.
 
 Artifact cap is 10 MiB and tabular cap 20,000 rows. Interactive samples cap at 50 observations; queue renders 200 matches over loaded summaries. A measured 20,000-row synthetic CSV took 1.14 s preview and 9.86 s acceptance with roughly 312 MiB process RSS; XLSX/concurrent-writer equivalence is not established. Public reads are bounded pages and may fail or quarantine incomplete records.
 
@@ -36,9 +39,9 @@ Names/verification inputs are locally asserted, no authentication or external pa
 
 ## Next scoped priority — planned
 
-The [next-phase proposal](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) prioritizes a reviewed publication candidate for the existing core and a tested operational SQL pack over real record-management questions, then N1 saved mappings/readable accepted-delivery comparisons. Organization/network participation storage and N2–N4 remain planned after that usable checkpoint. This is proposed work: no SQL example pack, catalog, participation model, schema migration or new API is implemented by this roadmap. Existing scope exclusions remain in place.
+The [next-phase proposal](docs/INTAKE_2_0_PROPOSAL.md#near-term-delivery-priority-publishable-core-and-transferable-data-work) defines checkpoints for the published core and operational SQL pack, now implemented. N1 saved mappings/readable accepted-delivery comparisons within the application, organization/network participation storage, and N2–N4 remain planned. No catalog, network participation model, mapping migration, or recurring-import API is implemented. Existing scope exclusions remain in place.
 
-The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) define P0–P3. The implemented core is documented above; P1 operational SQL and N1–N4 recurring import/network features remain planned. The [2026-10-30 snapshot qualification](docs/evidence/data_operations/p0/README.md) passed 124 Python tests, pipeline validation, six frontend tests, build and 14 browser scenarios. Remote CI is recorded independently after publication.
+The [delivery checkpoints](docs/INTAKE_2_0_PROPOSAL.md#delivery-checkpoints-and-documentation-updates) define P0–P3. The P0 core and P1 operational SQL are implemented; N1–N4 recurring-import/network features remain planned. The [2026-10-30 core qualification](docs/evidence/data_operations/p0/README.md) passed 124 Python tests, pipeline validation, six frontend tests, build and 14 browser scenarios. The [P1 qualification](docs/evidence/data_operations/p1/README.md) passed 130 Python tests and isolated pipeline validation in its original source checkout. Remote CI is recorded separately.
 
 
 ## Contributor navigation
